@@ -55,7 +55,8 @@ enum class ActivityType {
     VS,        // Visite Semestrielle
     ROUTE,     // Route
     DOMICILE,  // Domicile
-    PAUSE      // Pause
+    PAUSE,     // Pause
+    DEPLACEMENT // Déplacement
 }
 ```
 
@@ -152,18 +153,49 @@ private fun createDatabase(context: Context): AATTDatabase {
 
 ### Système de sauvegarde/restauration
 
-L'application permet de sauvegarder et restaurer la base de données depuis le stockage externe (dossier `Documents/AATT/`).
+L'application utilise une approche JSON pour la sauvegarde et restauration de la base de données, ce qui offre plusieurs avantages par rapport à une copie directe du fichier SQLite :
 
 ```kotlin
-// Dans ExternalStorageHelper
-fun backupDatabase(context: Context, customName: String? = null): String? {
-    // Implémentation de la sauvegarde...
+// Dans DatabaseBackupHelper
+fun exportToJson(context: Context, customName: String? = null): String? {
+    // Exportation des données au format JSON dans Documents/AATT/
+    // Retourne le chemin du fichier de sauvegarde ou null en cas d'échec
 }
 
-fun restoreDatabase(context: Context, backupFileName: String): Boolean {
-    // Implémentation de la restauration...
+fun importFromJson(context: Context, backupFile: String): Boolean {
+    // Importation des données depuis un fichier JSON
+    // Retourne true si la restauration a réussi, false sinon
+}
+
+fun listBackups(context: Context): List<Pair<String, String>> {
+    // Retourne une liste de paires (nom de la sauvegarde, chemin du fichier)
 }
 ```
+
+Format du fichier JSON de sauvegarde :
+```json
+{
+  "timestamp": 1714042001234,
+  "version": 1,
+  "activities": [
+    {
+      "id": 1,
+      "type": "VS",
+      "startTime": 1714041000000,
+      "endTime": 1714042000000,
+      "isActive": false
+    },
+    ...
+  ]
+}
+```
+
+### Avantages de l'approche JSON
+1. **Robustesse accrue** - Évite les problèmes liés aux connexions de base de données Room
+2. **Meilleure compatibilité** entre les versions d'Android
+3. **Indépendance du schéma** - Permet des migrations plus faciles
+4. **Débogage simplifié** - Les fichiers JSON sont lisibles par l'humain
+5. **Flexibilité** - Possibilité d'importation/exportation partielle
 
 ## API complète pour les opérations sur les activités
 

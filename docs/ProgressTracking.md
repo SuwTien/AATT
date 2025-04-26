@@ -88,7 +88,7 @@ Architecture flexible pour permettre le calcul des statistiques avec des règles
 ### Fonctionnalités à implémenter
 - [x] Interface utilisateur pour la gestion des sauvegardes/restaurations
 - [ ] Calculs statistiques réels (avec rules business)
-- [ ] Boîtes de dialogue pour l'édition des heures de début/fin des activités
+- [x] Boîtes de dialogue pour l'édition des heures de début/fin des activités
 - [ ] Amélioration de l'UI/UX
 
 ### Améliorations techniques prévues
@@ -97,6 +97,12 @@ Architecture flexible pour permettre le calcul des statistiques avec des règles
 - [ ] Surveillance des problèmes potentiels liés au stockage externe
 
 ## Journal des modifications
+
+### 2025-04-27
+- Nettoyage du code : suppression de DateTimePickerDialog.kt devenu obsolète
+- Élimination des importations inutilisées dans EditScreen.kt
+- Documentation mise à jour pour refléter l'achèvement des fonctionnalités UI
+- Boîtes de dialogue d'édition des heures de début/fin des activités complétées
 
 ### 2025-04-26 (soir)
 - Ajout du nouveau type d'activité DEPLACEMENT à l'énumération ActivityType

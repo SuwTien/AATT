@@ -25,24 +25,25 @@ L'application utilisera une base de données pour stocker des activités.
 - Nécessitera les permissions d'accès au stockage externe dans AndroidManifest.xml pour les opérations de sauvegarde/restauration
 
 ### Types d'activités
-Pour l'instant, quatre types d'activités sont prévus :
+Pour l'instant, cinq types d'activités sont prévus :
 - VS (Visite Semestrielle) - Comptée comme travail
 - ROUTE - Comptée avec une règle spéciale: 1h30 non comptée par jour
 - DOMICILE - Comptée comme travail
 - PAUSES - Ne désactive pas les autres activités en cours (comportement spécial)
+- DEPLACEMENT - Comptée comme travail
 
 ### Règles de comptabilisation des activités
-- **VS et DOMICILE**: Ces activités sont considérées comme du travail et sont comptabilisées ensemble dans les statistiques
+- **VS, DOMICILE et DEPLACEMENT**: Ces activités sont considérées comme du travail et sont comptabilisées ensemble dans les statistiques
 - **ROUTE**: Pour cette activité, 1h30 ne sont pas comptées chaque jour
 - **PAUSES**: 
-  - Comportement spécial : contrairement aux autres activités, ne désactive pas l'activité en cours (VS, ROUTE ou DOMICILE)
+  - Comportement spécial : contrairement aux autres activités, ne désactive pas l'activité en cours (VS, ROUTE, DOMICILE ou DEPLACEMENT)
   - Pourrait théoriquement être de deux types : pauses pendant le travail et pauses pendant la route
   - Fonctionnalité secondaire, l'objectif principal étant de compter le temps de travail
 
 ### Structure des données d'activité
 Chaque activité stockée dans la base de données contiendra :
 - ID : Identifiant unique de l'activité (clé primaire autogénérée)
-- Type d'activité (VS, ROUTE, DOMICILE ou PAUSES)
+- Type d'activité (VS, ROUTE, DOMICILE, PAUSES ou DEPLACEMENT)
 - Date et heure de début
 - Date et heure de fin (null si l'activité est en cours)
 - Flag indiquant si l'activité est active ou non
@@ -71,7 +72,8 @@ enum class ActivityType {
     VS,      // Visite Semestrielle
     ROUTE,   // Route
     DOMICILE, // Domicile
-    PAUSE    // Pause
+    PAUSE,    // Pause
+    DEPLACEMENT // Déplacement
 }
 ```
 
@@ -84,13 +86,12 @@ enum class ActivityType {
 ### Pages de l'application
 
 1. **Page principale**
-   - Affiche la barre de navigation supérieure
+   - Affiche un titre de l'application "Atlantic Automatic Time Tracker"
    - Affiche uniquement l'activité en cours (si elle existe)
-   - Contient une barre inférieure avec 4 gros boutons carrés:
-     - ROUTE
-     - VS (Visite Semestrielle)
-     - DOM (Domicile)
-     - PAUSE
+   - Contient deux rangées de boutons d'activité organisés comme suit:
+     - Rangée gauche: ROUTE et DEPLACEMENT
+     - Rangée centrale: PAUSE (bouton plus grand)
+     - Rangée droite: VS et DOMICILE
    
    **Fonctionnement des boutons:**
    - Quand on appuie sur un bouton, cela démarre ou arrête des activités
@@ -100,9 +101,9 @@ enum class ActivityType {
      - Définition du flag "actif" à vrai
    - Si une activité est déjà en cours quand on appuie sur un bouton:
      - **Cas spécial pour PAUSE**: 
-       - Si on appuie sur PAUSE, l'activité en cours (VS, ROUTE ou DOMICILE) continue
+       - Si on appuie sur PAUSE, l'activité en cours (VS, ROUTE, DOMICILE ou DEPLACEMENT) continue
        - La pause est enregistrée en parallèle
-     - **Pour les autres types d'activités** (VS, ROUTE, DOMICILE):
+     - **Pour les autres types d'activités** (VS, ROUTE, DOMICILE, DEPLACEMENT):
        - L'activité en cours s'arrête (enregistrement de la date et l'heure de fin)
        - Le flag "actif" est mis à faux
        - Si le bouton appuyé correspond à un type différent de l'activité arrêtée:
@@ -191,17 +192,17 @@ Pour gérer les sauvegardes de la base de données dans le stockage externe (`/A
 
 ### Calculs spécifiques pour les statistiques
 1. **Statistiques journalières**:
-   - Temps total de travail (VS + DOMICILE)
+   - Temps total de travail (VS + DOMICILE + DEPLACEMENT)
    - Temps de route avec indication du total brut et du total après déduction de 1h30
    - Temps de pause
 
 2. **Statistiques hebdomadaires**:
-   - Cumul du temps de travail (VS + DOMICILE) sur la semaine
+   - Cumul du temps de travail (VS + DOMICILE + DEPLACEMENT) sur la semaine
    - Cumul du temps de route sur la semaine, avec déduction de 1h30 par jour travaillé
    - Nombre de jours travaillés dans la semaine
 
 3. **Statistiques mensuelles**:
-   - Cumul du temps de travail (VS + DOMICILE) sur le mois
+   - Cumul du temps de travail (VS + DOMICILE + DEPLACEMENT) sur le mois
    - Cumul du temps de route sur le mois, avec déduction de 1h30 par jour travaillé
    - Nombre de jours travaillés dans le mois
 

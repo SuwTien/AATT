@@ -33,7 +33,6 @@ import fr.bdst.aatt.data.model.Activity
 import fr.bdst.aatt.data.model.ActivityType
 import fr.bdst.aatt.data.util.StatisticsCalculator
 import fr.bdst.aatt.ui.components.DateSelector
-import fr.bdst.aatt.ui.components.DateTimePickerDialog
 import fr.bdst.aatt.viewmodel.EditViewModel
 import java.io.File
 import java.text.SimpleDateFormat

@@ -2,9 +2,15 @@ package fr.bdst.aatt.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.ModeOfTravel
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,25 +41,7 @@ fun MainScreen(
     val dateFormat = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
     
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("AATT", style = MaterialTheme.typography.titleLarge) },
-                actions = {
-                    IconButton(onClick = navigateToEdit) {
-                        Icon(
-                            imageVector = Icons.Filled.Edit,
-                            contentDescription = "Éditer les activités"
-                        )
-                    }
-                    IconButton(onClick = navigateToStats) {
-                        Icon(
-                            imageVector = Icons.Filled.BarChart,
-                            contentDescription = "Statistiques"
-                        )
-                    }
-                }
-            )
-        }
+        // Suppression de la TopBar
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -66,6 +54,81 @@ fun MainScreen(
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Nouveau titre sur deux lignes
+                Text(
+                    text = "Atlantic Automatic",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+                
+                Text(
+                    text = "Time Tracker",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Boutons d'édition et de statistiques qui prennent toute la largeur
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        onClick = navigateToEdit,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp)
+                            .padding(end = 4.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = MaterialTheme.colorScheme.primary // Définir une couleur explicite pour l'icône
+                        )
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Edit,
+                                contentDescription = "Éditer les activités",
+                                modifier = Modifier.size(28.dp),
+                                tint = MaterialTheme.colorScheme.primary // Couleur explicite pour l'icône
+                            )
+                        }
+                    }
+                    
+                    Button(
+                        onClick = navigateToStats,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp)
+                            .padding(start = 4.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = MaterialTheme.colorScheme.primary // Définir une couleur explicite pour l'icône
+                        )
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.BarChart,
+                                contentDescription = "Statistiques",
+                                modifier = Modifier.size(28.dp),
+                                tint = MaterialTheme.colorScheme.primary // Couleur explicite pour l'icône
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
                 // Zone d'affichage de l'activité en cours
                 Card(
                     modifier = Modifier
@@ -122,7 +185,7 @@ fun MainScreen(
                                                     ActivityType.ROUTE -> Color(0xFF2196F3)
                                                     ActivityType.DOMICILE -> Color(0xFFFF9800)
                                                     ActivityType.PAUSE -> Color(0xFFF44336)
-                                                    ActivityType.DEPLACEMENT -> Color(0xFF9C27B0) // Violet pour déplacement
+                                                    ActivityType.DEPLACEMENT -> Color(0xFF4CAF50) // Changé de violet à vert pour correspondre au bouton
                                                 }
                                             ),
                                             modifier = Modifier.padding(4.dp)
@@ -155,78 +218,115 @@ fun MainScreen(
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                // Barre avec les 5 boutons d'activité (2 rangées)
-                Column(
+                // Barre avec les 5 boutons d'activité organisés en 3 colonnes
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .height(170.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Première rangée de 3 boutons
-                    Row(
+                    // Colonne de gauche: ROUTE et DEPLACEMENT
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(80.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.SpaceBetween
                     ) {
-                        ActivityButton(
-                            type = ActivityType.ROUTE,
-                            label = "ROUTE",
-                            color = Color(0xFF2196F3),  // Bleu
-                            isActive = activeActivities.any { it.type == ActivityType.ROUTE },
-                            isEnabled = !isLoading,
-                            onClick = { viewModel.toggleActivity(ActivityType.ROUTE) }
-                        )
+                        Box(modifier = Modifier.weight(1f)) {
+                            ActivityButton(
+                                type = ActivityType.ROUTE,
+                                label = "",
+                                color = Color(0xFF2196F3),  // Bleu
+                                isActive = activeActivities.any { it.type == ActivityType.ROUTE },
+                                isEnabled = !isLoading,
+                                showIcon = true,
+                                showLabel = false,
+                                onClick = { viewModel.toggleActivity(ActivityType.ROUTE) }
+                            )
+                        }
                         
-                        ActivityButton(
-                            type = ActivityType.VS,
-                            label = "VS",
-                            color = Color(0xFF4CAF50),  // Vert
-                            isActive = activeActivities.any { it.type == ActivityType.VS },
-                            isEnabled = !isLoading,
-                            onClick = { viewModel.toggleActivity(ActivityType.VS) }
-                        )
+                        Spacer(modifier = Modifier.height(8.dp))
                         
-                        ActivityButton(
-                            type = ActivityType.DOMICILE,
-                            label = "DOM",
-                            color = Color(0xFFFF9800),  // Orange
-                            isActive = activeActivities.any { it.type == ActivityType.DOMICILE },
-                            isEnabled = !isLoading,
-                            onClick = { viewModel.toggleActivity(ActivityType.DOMICILE) }
-                        )
+                        Box(modifier = Modifier.weight(1f)) {
+                            ActivityButton(
+                                type = ActivityType.DEPLACEMENT,
+                                label = "",
+                                color = Color(0xFF4CAF50),  // Vert (comme VS)
+                                isActive = activeActivities.any { it.type == ActivityType.DEPLACEMENT },
+                                isEnabled = !isLoading,
+                                showIcon = true,
+                                showLabel = false,
+                                onClick = { viewModel.toggleActivity(ActivityType.DEPLACEMENT) }
+                            )
+                        }
                     }
                     
-                    Spacer(modifier = Modifier.height(8.dp))
+                    // Espace entre les colonnes
+                    Spacer(modifier = Modifier.width(8.dp))
                     
-                    // Deuxième rangée de 2 boutons
-                    Row(
+                    // Colonne du milieu: PAUSE
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(80.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.Center
                     ) {
                         ActivityButton(
-                            type = ActivityType.DEPLACEMENT,
-                            label = "DEPL",
-                            color = Color(0xFF9C27B0),  // Violet
-                            isActive = activeActivities.any { it.type == ActivityType.DEPLACEMENT },
-                            isEnabled = !isLoading,
-                            onClick = { viewModel.toggleActivity(ActivityType.DEPLACEMENT) }
-                        )
-                        
-                        ActivityButton(
                             type = ActivityType.PAUSE,
-                            label = "PAUSE",
+                            label = "",
                             color = Color(0xFFF44336),  // Rouge
                             isActive = activeActivities.any { it.type == ActivityType.PAUSE },
                             isEnabled = !isLoading,
+                            showIcon = true,
+                            showLabel = false,
+                            modifier = Modifier.fillMaxWidth().fillMaxHeight(),
                             onClick = { viewModel.toggleActivity(ActivityType.PAUSE) }
                         )
+                    }
+                    
+                    // Espace entre les colonnes
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    // Colonne de droite: VS et DOMICILE
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            ActivityButton(
+                                type = ActivityType.VS,
+                                label = "VS",
+                                color = Color(0xFF4CAF50),  // Vert
+                                isActive = activeActivities.any { it.type == ActivityType.VS },
+                                isEnabled = !isLoading,
+                                showIcon = false,
+                                showLabel = true,
+                                onClick = { viewModel.toggleActivity(ActivityType.VS) }
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Box(modifier = Modifier.weight(1f)) {
+                            ActivityButton(
+                                type = ActivityType.DOMICILE,
+                                label = "",
+                                color = Color(0xFFFF9800),  // Orange
+                                isActive = activeActivities.any { it.type == ActivityType.DOMICILE },
+                                isEnabled = !isLoading,
+                                showIcon = true,
+                                showLabel = false,
+                                onClick = { viewModel.toggleActivity(ActivityType.DOMICILE) }
+                            )
+                        }
                     }
                 }
             }
             
             // Message d'erreur en snackbar
-            errorMessage?.let { error ->
+            errorMessage?.let { error -> 
                 Snackbar(
                     modifier = Modifier
                         .padding(16.dp)
@@ -257,12 +357,15 @@ fun ActivityButton(
     color: Color,
     isActive: Boolean,
     isEnabled: Boolean = true,
+    showIcon: Boolean = true,
+    showLabel: Boolean = true,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     Button(
         onClick = onClick,
-        modifier = Modifier
-            .size(80.dp)
+        modifier = modifier
+            .fillMaxSize()
             .padding(4.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isActive) color else color.copy(alpha = 0.6f),
@@ -271,11 +374,43 @@ fun ActivityButton(
         shape = MaterialTheme.shapes.medium,
         enabled = isEnabled
     ) {
-        Text(
-            text = label,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            if (showIcon) {
+                val icon = when (type) {
+                    ActivityType.ROUTE -> Icons.Filled.DirectionsCar
+                    ActivityType.VS -> Icons.Filled.LocationOn
+                    ActivityType.DOMICILE -> Icons.Filled.Home
+                    ActivityType.DEPLACEMENT -> Icons.Filled.ModeOfTravel
+                    ActivityType.PAUSE -> Icons.Filled.Pause
+                }
+                
+                Icon(
+                    imageVector = icon,
+                    contentDescription = when(type) {
+                        ActivityType.ROUTE -> "Route"
+                        ActivityType.VS -> "Visite Semestrielle"
+                        ActivityType.DOMICILE -> "Domicile"
+                        ActivityType.DEPLACEMENT -> "Déplacement"
+                        ActivityType.PAUSE -> "Pause"
+                    },
+                    modifier = Modifier.size(36.dp)
+                )
+                
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+            
+            if (showLabel && label.isNotEmpty()) {
+                Text(
+                    text = label,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
     }
 }

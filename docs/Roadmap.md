@@ -20,7 +20,6 @@
 - **Kotlin Coroutines**: Pour les opérations asynchrones
 - **Material Design 3**: Pour les composants UI
 - **Accompanist**: Utilitaires supplémentaires pour Compose
-- **DateTimePicker**: Pour la sélection de date et heure dans la page d'édition
 
 ## Phases de Développement
 
@@ -67,12 +66,14 @@
 2. **Logique des statistiques** ⏳
    - Implémentation des calculs spécifiques pour chaque période
    - Application des règles métier (déduction de 1h30 pour la ROUTE, etc.)
+   - Prise en compte du nouveau type d'activité DEPLACEMENT
 
-3. **Améliorations UI/UX** ⏳
+3. **Améliorations UI/UX** ✅
    - Sélecteurs de date/heure pour modifier les activités
-   - Animations et transitions
-   - Affichage optimisé des informations
-   - Amélioration du design visuel
+   - Réorganisation des boutons d'activité en format 3+2 optimisé
+   - Interface utilisateur optimisée avec textes plus grands et centrés
+   - Réduction des paddings pour maximiser l'espace vertical
+   - Utilisation de codes couleur cohérents pour les activités
 
 ### Phase 4: Tests et finalisation 🔜
 1. **Tests unitaires**
@@ -93,28 +94,37 @@
 - Structure MVVM de base
 - Base de données Room et repository
 - Interface utilisateur principale avec boutons d'activité
-- Page d'édition des activités terminées
+- Page d'édition des activités terminées avec support du nouveau type DEPLACEMENT
 - Structure de la page de statistiques
-- Système de sauvegarde/restauration JSON robuste
+- Système de sauvegarde/restauration JSON robuste (migration réussie depuis l'approche précédente)
+- Sélecteurs de date et d'heure pour la modification des activités
+- Filtrage par date dans la page d'édition
+- Optimisation de l'interface avec meilleure utilisation de l'espace vertical
+- Réorganisation des boutons d'activité en deux rangées (3+2) pour une meilleure ergonomie
 
 ### En cours ⏳
-- Implémentation complète des calculs statistiques avec règles métier
-- Sélecteurs de date/heure pour la modification des activités
+- Implémentation complète des calculs statistiques avec règles métier incluant le type DEPLACEMENT
 
 ### À venir 🔜
 - Tests unitaires et d'UI
 - Optimisations de performance
-- Améliorations UI/UX avancées
+- Documentation complète du code
+- Ajouter des filtres avancés dans la page d'édition
 
 ## Priorités pour la prochaine itération
 
-1. **Filtrage par date dans la page d'édition** 🆕
-   - Ajout d'un affichage filtré par jour des activités terminées
-   - Interface minimaliste avec date cliquable pour sélection
-   - Affichage par défaut des activités du jour actuel
-   - Possibilité de naviguer facilement entre les différents jours
+1. **Calculateurs statistiques jour/semaine/mois** 🆕
+   - Finaliser l'implémentation des calculs avec les règles métier spécifiques
+   - Inclure le temps de DEPLACEMENT avec VS et DOMICILE dans les calculs de travail
+   - Ajouter des visualisations claires des temps par type d'activité
+   - Implémenter la règle de déduction de 1h30 pour ROUTE
 
-2. Finaliser l'implémentation des calculs statistiques selon les règles métier
-3. Ajouter des sélecteurs de date/heure pour la modification des activités
-4. Améliorer l'interface utilisateur de la page de statistiques
-5. Commencer à mettre en place des tests unitaires pour la logique métier
+2. **Améliorations visuelles de la page de statistiques** 🆕
+   - Ajouter des graphiques pour visualiser la répartition du temps
+   - Améliorer l'organisation des informations pour une meilleure lisibilité
+   - Utiliser des couleurs cohérentes avec les boutons d'activité
+
+3. **Documentation et tests** 🆕
+   - Ajouter des commentaires KDoc dans le code source
+   - Créer des tests unitaires pour les fonctions principales
+   - Documenter les cas d'utilisation principaux
