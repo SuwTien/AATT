@@ -707,6 +707,7 @@ fun ActivityItem(
 
 /**
  * Boîte de dialogue pour éditer les heures de début et de fin d'une activité
+ * Utilise le composant DateTimePickerDialog pour la sélection
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -716,17 +717,27 @@ fun ActivityEditDialog(
     onEditStartTime: (Long) -> Unit,
     onEditEndTime: (Long) -> Unit
 ) {
-    // État pour savoir si on modifie l'heure de début ou de fin
-    var editingStartTime by remember { mutableStateOf(false) }
-    var editingEndTime by remember { mutableStateOf(false) }
+    // État pour savoir si on édite l'heure de début ou de fin
+    var editingStartTime by remember { mutableStateOf(true) }
     
     // États pour stocker temporairement les valeurs sélectionnées
     var selectedStartTime by remember { mutableStateOf(activity.startTime) }
     var selectedEndTime by remember { mutableStateOf(activity.endTime ?: System.currentTimeMillis()) }
     
-    // Formats de date/heure pour l'affichage
+    // Format de date pour l'affichage
     val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    
+    // Détermine le titre et la timestamp actuellement en édition
+    val currentTitle = when (activity.type) {
+        ActivityType.VS -> if (editingStartTime) "Début de visite semestrielle" else "Fin de visite semestrielle"
+        ActivityType.ROUTE -> if (editingStartTime) "Début de trajet" else "Fin de trajet"
+        ActivityType.DOMICILE -> if (editingStartTime) "Début d'activité à domicile" else "Fin d'activité à domicile"
+        ActivityType.PAUSE -> if (editingStartTime) "Début de pause" else "Fin de pause"
+        ActivityType.DEPLACEMENT -> if (editingStartTime) "Début de déplacement" else "Fin de déplacement"
+    }
+    
+    val currentTimestamp = if (editingStartTime) selectedStartTime else selectedEndTime
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -748,39 +759,95 @@ fun ActivityEditDialog(
                     .padding(vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Bouton pour modifier l'heure de début
+                // Onglets pour choisir entre début et fin
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Onglet Début
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (editingStartTime) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant)
+                            .clickable { editingStartTime = true }
+                            .padding(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Début",
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
+                            color = if (editingStartTime) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = timeFormat.format(Date(selectedStartTime)),
+                            style = MaterialTheme.typography.titleMedium,
+                            textAlign = TextAlign.Center,
+                            color = if (editingStartTime) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    // Onglet Fin
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 8.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (!editingStartTime) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant)
+                            .clickable(enabled = activity.endTime != null) { 
+                                if (activity.endTime != null) {
+                                    editingStartTime = false 
+                                }
+                            }
+                            .padding(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = if (activity.endTime != null) "Fin" else "En cours",
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
+                            color = if (!editingStartTime && activity.endTime != null) 
+                                MaterialTheme.colorScheme.onPrimaryContainer 
+                            else if (activity.endTime == null)
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            else 
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = if (activity.endTime != null) 
+                                timeFormat.format(Date(selectedEndTime)) 
+                            else 
+                                "---",
+                            style = MaterialTheme.typography.titleMedium,
+                            textAlign = TextAlign.Center,
+                            color = if (!editingStartTime && activity.endTime != null) 
+                                MaterialTheme.colorScheme.onPrimaryContainer 
+                            else if (activity.endTime == null)
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            else 
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                
+                // Bouton pour ouvrir le sélecteur
                 OutlinedButton(
-                    onClick = { editingStartTime = true },
+                    onClick = { 
+                        // L'ouverture du DateTimePickerDialog se fait en dessous via les variables d'état
+                    },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = "Modifier l'heure de début"
+                        contentDescription = "Modifier"
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Heure de début: ${timeFormat.format(Date(selectedStartTime))}"
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                // Bouton pour modifier l'heure de fin
-                OutlinedButton(
-                    onClick = { editingEndTime = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = activity.endTime != null // Désactivé si l'activité est en cours
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Modifier l'heure de fin"
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = if (activity.endTime != null) 
-                            "Heure de fin: ${timeFormat.format(Date(selectedEndTime))}" 
-                        else 
-                            "Activité en cours"
+                        text = "Modifier " + (if (editingStartTime) "l'heure de début" else "l'heure de fin")
                     )
                 }
             }
@@ -792,92 +859,26 @@ fun ActivityEditDialog(
         }
     )
     
-    // Boîte de dialogue pour sélectionner l'heure de début
+    // Affichage du DateTimePickerDialog lorsque nécessaire
     if (editingStartTime) {
-        TimePickerDialog(
-            initialTimeMillis = selectedStartTime,
-            onDismissRequest = { editingStartTime = false },
-            onTimeSelected = { timeInMillis ->
-                selectedStartTime = timeInMillis
-                onEditStartTime(timeInMillis)
-                editingStartTime = false
-            }
+        DateTimePickerDialog(
+            timestamp = selectedStartTime,
+            onDismissRequest = { /* Ne rien faire, on reste dans la boîte de dialogue principale */ },
+            onConfirm = { newTimestamp ->
+                selectedStartTime = newTimestamp
+                onEditStartTime(newTimestamp)
+            },
+            title = currentTitle
+        )
+    } else if (activity.endTime != null) {
+        DateTimePickerDialog(
+            timestamp = selectedEndTime,
+            onDismissRequest = { /* Ne rien faire, on reste dans la boîte de dialogue principale */ },
+            onConfirm = { newTimestamp ->
+                selectedEndTime = newTimestamp
+                onEditEndTime(newTimestamp)
+            },
+            title = currentTitle
         )
     }
-    
-    // Boîte de dialogue pour sélectionner l'heure de fin
-    if (editingEndTime) {
-        TimePickerDialog(
-            initialTimeMillis = selectedEndTime,
-            onDismissRequest = { editingEndTime = false },
-            onTimeSelected = { timeInMillis ->
-                selectedEndTime = timeInMillis
-                onEditEndTime(timeInMillis)
-                editingEndTime = false
-            }
-        )
-    }
-}
-
-/**
- * Boîte de dialogue pour sélectionner une heure
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TimePickerDialog(
-    initialTimeMillis: Long,
-    onDismissRequest: () -> Unit,
-    onTimeSelected: (Long) -> Unit
-) {
-    val calendar = remember { Calendar.getInstance().apply { timeInMillis = initialTimeMillis } }
-    var hour by remember { mutableStateOf(calendar.get(Calendar.HOUR_OF_DAY)) }
-    var minute by remember { mutableStateOf(calendar.get(Calendar.MINUTE)) }
-    val timePickerState = rememberTimePickerState(
-        initialHour = hour,
-        initialMinute = minute,
-        is24Hour = true
-    )
-    
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = { Text("Sélectionner une heure") },
-        text = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                TimePicker(
-                    state = timePickerState,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    // Mettre à jour l'heure sélectionnée
-                    hour = timePickerState.hour
-                    minute = timePickerState.minute
-                    
-                    // Créer un nouvel objet Calendar avec l'heure sélectionnée mais en gardant la même date
-                    val newCalendar = Calendar.getInstance().apply { 
-                        timeInMillis = initialTimeMillis
-                        set(Calendar.HOUR_OF_DAY, hour)
-                        set(Calendar.MINUTE, minute)
-                        set(Calendar.SECOND, 0)
-                        set(Calendar.MILLISECOND, 0)
-                    }
-                    
-                    onTimeSelected(newCalendar.timeInMillis)
-                }
-            ) {
-                Text("OK")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text("Annuler")
-            }
-        }
-    )
 }

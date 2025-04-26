@@ -10,12 +10,13 @@
 - [x] Navigation entre les écrans avec Jetpack Compose Navigation
 
 ### Modèles de données
-- [x] Entités Activity et enum ActivityType définis
+- [x] Entités Activity et enum ActivityType définis avec 5 types (VS, ROUTE, DOMICILE, PAUSE, DEPLACEMENT)
 - [x] Converters pour les types de données complexes
 - [x] ActivityDao pour les opérations CRUD
 
 ### Interface utilisateur
 - [x] MainScreen avec boutons d'activité et affichage de l'activité en cours
+- [x] Organisation optimisée des boutons d'activité en deux rangées (3+2)
 - [x] EditScreen pour gérer les activités terminées
 - [x] StatsScreen (structure de base)
 - [x] Composants réutilisables (ActivityButton, etc.)
@@ -96,6 +97,13 @@ Architecture flexible pour permettre le calcul des statistiques avec des règles
 - [ ] Surveillance des problèmes potentiels liés au stockage externe
 
 ## Journal des modifications
+
+### 2025-04-26 (soir)
+- Ajout du nouveau type d'activité DEPLACEMENT à l'énumération ActivityType
+- Réorganisation des boutons d'activité en deux rangées (3+2) pour une meilleure ergonomie
+- Mise à jour du StatisticsCalculator pour prendre en compte le nouveau type d'activité
+- Modification de l'interface d'édition pour gérer le type DEPLACEMENT
+- Mise à jour de la documentation pour refléter l'ajout de ce nouveau type
 
 ### 2025-04-27
 - Optimisation de l'interface utilisateur des boîtes de dialogue d'édition

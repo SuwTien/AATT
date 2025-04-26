@@ -5,7 +5,7 @@
 ### Première version prévue pour le Google Play Store 🎉
 
 #### Fonctionnalités principales
-- Suivi d'activités professionnelles (Visite Semestrielle, Route, Domicile, Pause)
+- Suivi d'activités professionnelles (Visite Semestrielle, Route, Domicile, Pause, Déplacement)
 - Interface utilisateur intuitive avec Jetpack Compose
 - Édition des activités terminées (modification de dates/heures, suppression, réactivation)
 - Système de sauvegarde/restauration JSON robuste
@@ -22,6 +22,6 @@ Cette première version sera publiée en test sur le Google Play Store pour recu
 
 #### Prochaines évolutions prévues
 - Filtrage par date dans la page d'édition
-- Finalisation des calculs statistiques avec règles métier
+- Finalisation des calculs statistiques avec règles métier pour tous les types d'activités
 - Amélioration de l'interface pour l'édition des dates/heures
 - Optimisations diverses et corrections de bugs
