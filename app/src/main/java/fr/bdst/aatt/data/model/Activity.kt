@@ -32,5 +32,6 @@ enum class ActivityType {
     VS,      // Visite Semestrielle
     ROUTE,   // Route
     DOMICILE, // Domicile
-    PAUSE    // Pause
+    PAUSE,   // Pause
+    DEPLACEMENT // Déplacement
 }

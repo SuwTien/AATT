@@ -521,6 +521,7 @@ fun ActivityItem(
                     ActivityType.ROUTE -> "ROUTE"
                     ActivityType.DOMICILE -> "DOMICILE"
                     ActivityType.PAUSE -> "PAUSE"
+                    ActivityType.DEPLACEMENT -> "DÉPLACEMENT"
                 },
                 style = MaterialTheme.typography.titleLarge, // Texte plus grand
                 textAlign = TextAlign.Center
@@ -736,6 +737,7 @@ fun ActivityEditDialog(
                     ActivityType.ROUTE -> "Modifier le trajet"
                     ActivityType.DOMICILE -> "Modifier l'activité à domicile"
                     ActivityType.PAUSE -> "Modifier la pause"
+                    ActivityType.DEPLACEMENT -> "Modifier le déplacement"
                 }
             )
         },

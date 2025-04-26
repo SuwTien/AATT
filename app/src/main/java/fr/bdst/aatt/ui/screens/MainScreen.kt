@@ -95,6 +95,7 @@ fun MainScreen(
                                         ActivityType.ROUTE -> "Route"
                                         ActivityType.DOMICILE -> "Domicile"
                                         ActivityType.PAUSE -> "Pause"
+                                        ActivityType.DEPLACEMENT -> "Déplacement"
                                     }
                                     
                                     Text(
@@ -121,6 +122,7 @@ fun MainScreen(
                                                     ActivityType.ROUTE -> Color(0xFF2196F3)
                                                     ActivityType.DOMICILE -> Color(0xFFFF9800)
                                                     ActivityType.PAUSE -> Color(0xFFF44336)
+                                                    ActivityType.DEPLACEMENT -> Color(0xFF9C27B0) // Violet pour déplacement
                                                 }
                                             ),
                                             modifier = Modifier.padding(4.dp)
@@ -153,48 +155,73 @@ fun MainScreen(
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                // Barre avec les 4 boutons d'activité
-                Row(
+                // Barre avec les 5 boutons d'activité (2 rangées)
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(120.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    ActivityButton(
-                        type = ActivityType.ROUTE,
-                        label = "ROUTE",
-                        color = Color(0xFF2196F3),  // Bleu
-                        isActive = activeActivities.any { it.type == ActivityType.ROUTE },
-                        isEnabled = !isLoading,
-                        onClick = { viewModel.toggleActivity(ActivityType.ROUTE) }
-                    )
+                    // Première rangée de 3 boutons
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(80.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        ActivityButton(
+                            type = ActivityType.ROUTE,
+                            label = "ROUTE",
+                            color = Color(0xFF2196F3),  // Bleu
+                            isActive = activeActivities.any { it.type == ActivityType.ROUTE },
+                            isEnabled = !isLoading,
+                            onClick = { viewModel.toggleActivity(ActivityType.ROUTE) }
+                        )
+                        
+                        ActivityButton(
+                            type = ActivityType.VS,
+                            label = "VS",
+                            color = Color(0xFF4CAF50),  // Vert
+                            isActive = activeActivities.any { it.type == ActivityType.VS },
+                            isEnabled = !isLoading,
+                            onClick = { viewModel.toggleActivity(ActivityType.VS) }
+                        )
+                        
+                        ActivityButton(
+                            type = ActivityType.DOMICILE,
+                            label = "DOM",
+                            color = Color(0xFFFF9800),  // Orange
+                            isActive = activeActivities.any { it.type == ActivityType.DOMICILE },
+                            isEnabled = !isLoading,
+                            onClick = { viewModel.toggleActivity(ActivityType.DOMICILE) }
+                        )
+                    }
                     
-                    ActivityButton(
-                        type = ActivityType.VS,
-                        label = "VS",
-                        color = Color(0xFF4CAF50),  // Vert
-                        isActive = activeActivities.any { it.type == ActivityType.VS },
-                        isEnabled = !isLoading,
-                        onClick = { viewModel.toggleActivity(ActivityType.VS) }
-                    )
+                    Spacer(modifier = Modifier.height(8.dp))
                     
-                    ActivityButton(
-                        type = ActivityType.DOMICILE,
-                        label = "DOM",
-                        color = Color(0xFFFF9800),  // Orange
-                        isActive = activeActivities.any { it.type == ActivityType.DOMICILE },
-                        isEnabled = !isLoading,
-                        onClick = { viewModel.toggleActivity(ActivityType.DOMICILE) }
-                    )
-                    
-                    ActivityButton(
-                        type = ActivityType.PAUSE,
-                        label = "PAUSE",
-                        color = Color(0xFFF44336),  // Rouge
-                        isActive = activeActivities.any { it.type == ActivityType.PAUSE },
-                        isEnabled = !isLoading,
-                        onClick = { viewModel.toggleActivity(ActivityType.PAUSE) }
-                    )
+                    // Deuxième rangée de 2 boutons
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(80.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        ActivityButton(
+                            type = ActivityType.DEPLACEMENT,
+                            label = "DEPL",
+                            color = Color(0xFF9C27B0),  // Violet
+                            isActive = activeActivities.any { it.type == ActivityType.DEPLACEMENT },
+                            isEnabled = !isLoading,
+                            onClick = { viewModel.toggleActivity(ActivityType.DEPLACEMENT) }
+                        )
+                        
+                        ActivityButton(
+                            type = ActivityType.PAUSE,
+                            label = "PAUSE",
+                            color = Color(0xFFF44336),  // Rouge
+                            isActive = activeActivities.any { it.type == ActivityType.PAUSE },
+                            isEnabled = !isLoading,
+                            onClick = { viewModel.toggleActivity(ActivityType.PAUSE) }
+                        )
+                    }
                 }
             }
             

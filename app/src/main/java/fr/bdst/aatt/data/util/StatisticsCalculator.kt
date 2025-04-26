@@ -77,6 +77,10 @@ class StatisticsCalculator {
                             ActivityType.PAUSE -> {
                                 dayPauseDuration += duration
                             }
+                            ActivityType.DEPLACEMENT -> {
+                                // Pour l'instant, le déplacement n'est pas compté dans les statistiques de travail ou de route
+                                // À adapter selon les besoins métier
+                            }
                         }
                     }
                     
@@ -118,6 +122,10 @@ class StatisticsCalculator {
                         ActivityType.VS, ActivityType.DOMICILE -> totalWorkDuration += duration
                         ActivityType.ROUTE -> totalRouteDuration += duration
                         ActivityType.PAUSE -> totalPauseDuration += duration
+                        ActivityType.DEPLACEMENT -> {
+                            // Pour l'instant, le déplacement n'est pas compté dans les statistiques
+                            // À adapter selon les besoins métier
+                        }
                     }
                 }
                 
