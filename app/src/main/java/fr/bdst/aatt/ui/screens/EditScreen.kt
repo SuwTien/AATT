@@ -1,22 +1,35 @@
 package fr.bdst.aatt.ui.screens
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import fr.bdst.aatt.data.db.AATTDatabase
+import androidx.compose.ui.window.Dialog
 import fr.bdst.aatt.data.model.Activity
 import fr.bdst.aatt.data.model.ActivityType
 import fr.bdst.aatt.data.util.StatisticsCalculator
+import fr.bdst.aatt.ui.components.DateSelector
+import fr.bdst.aatt.ui.components.DateTimePickerDialog
 import fr.bdst.aatt.viewmodel.EditViewModel
 import java.io.File
 import java.text.SimpleDateFormat
@@ -28,9 +41,13 @@ fun EditScreen(
     viewModel: EditViewModel,
     navigateBack: () -> Unit
 ) {
-    val completedActivities by viewModel.completedActivities.collectAsState()
+    val dailyActivities by viewModel.dailyActivities.collectAsState()
     val backups by viewModel.backups.collectAsState()
-    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
+    val selectedDate by viewModel.selectedDate.collectAsState()
+    
+    // Formats de date/heure
+    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    
     val context = LocalContext.current
     val operationResult by viewModel.operationResult.collectAsState()
     
@@ -40,6 +57,9 @@ fun EditScreen(
     var showBackupListDialog by remember { mutableStateOf(false) }
     var showRestoreConfirmDialog by remember { mutableStateOf<String?>(null) } // Stocke le chemin de la sauvegarde à restaurer
     var backupName by remember { mutableStateOf("") }
+    
+    // État pour le menu déroulant
+    var showDropdownMenu by remember { mutableStateOf(false) }
     
     // État pour le Snackbar de résultat
     var showSnackbar by remember { mutableStateOf(false) }
@@ -59,47 +79,86 @@ fun EditScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Édition des activités") },
+                title = { Text("Édition") },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Retour"
                         )
                     }
                 },
                 actions = {
-                    // Bouton pour gérer les sauvegardes
-                    IconButton(onClick = { 
-                        viewModel.refreshBackupsList(context)
-                        showBackupListDialog = true 
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Restore,
-                            contentDescription = "Gérer les sauvegardes"
-                        )
-                    }
-                    
-                    // Bouton de sauvegarde
-                    IconButton(onClick = { showBackupDialog = true }) {
-                        Icon(
-                            imageVector = Icons.Default.Save,
-                            contentDescription = "Sauvegarder les activités"
-                        )
-                    }
-                    
-                    // Bouton pour effacer toutes les activités
-                    IconButton(onClick = { showClearConfirmDialog = true }) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Effacer toutes les activités"
-                        )
+                    // Menu à trois points remplaçant les trois boutons
+                    Box {
+                        IconButton(onClick = { showDropdownMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = "Plus d'options"
+                            )
+                        }
+                        
+                        // Menu déroulant avec les options
+                        DropdownMenu(
+                            expanded = showDropdownMenu,
+                            onDismissRequest = { showDropdownMenu = false }
+                        ) {
+                            // Option Charger une sauvegarde
+                            DropdownMenuItem(
+                                text = { Text("Charger") },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Restore,
+                                        contentDescription = "Charger une sauvegarde"
+                                    )
+                                },
+                                onClick = { 
+                                    viewModel.refreshBackupsList(context)
+                                    showDropdownMenu = false
+                                    showBackupListDialog = true
+                                }
+                            )
+                            
+                            // Option Sauvegarder
+                            DropdownMenuItem(
+                                text = { Text("Enregistrer") },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Save,
+                                        contentDescription = "Enregistrer une sauvegarde"
+                                    )
+                                },
+                                onClick = {
+                                    showDropdownMenu = false
+                                    showBackupDialog = true
+                                }
+                            )
+                            
+                            // Séparateur
+                            HorizontalDivider()
+                            
+                            // Option Effacer tout (en rouge)
+                            DropdownMenuItem(
+                                text = { Text("Effacer tout", color = MaterialTheme.colorScheme.error) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Effacer toutes les activités",
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                },
+                                onClick = {
+                                    showDropdownMenu = false
+                                    showClearConfirmDialog = true
+                                }
+                            )
+                        }
                     }
                 }
             )
         },
         snackbarHost = {
-            SnackbarHost(hostState = remember { SnackbarHostState() }) { data ->
+            SnackbarHost(hostState = remember { SnackbarHostState() }) { _ ->
                 Snackbar(
                     action = {
                         TextButton(onClick = { 
@@ -114,172 +173,187 @@ fun EditScreen(
                 }
             }
         }
-    ) { innerPadding ->
-        Box(
+    ) { innerPadding -> 
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            if (completedActivities.isEmpty()) {
-                // Affichage lorsqu'il n'y a pas d'activités terminées
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Aucune activité terminée à afficher",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            } else {
-                // Liste des activités terminées
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp)
-                ) {
-                    items(completedActivities) { activity ->
-                        ActivityItem(
-                            activity = activity,
-                            dateFormat = dateFormat,
-                            onDelete = { viewModel.deleteActivity(activity.id) },
-                            onReactivate = { viewModel.reactivateActivity(activity.id) },
-                            onEditStartTime = { newTime -> viewModel.updateStartTime(activity.id, newTime) },
-                            onEditEndTime = { newTime -> viewModel.updateEndTime(activity.id, newTime) }
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                }
-            }
+            // Sélecteur de date
+            DateSelector(
+                selectedDate = selectedDate,
+                onPreviousDay = { viewModel.navigateToPreviousDay() },
+                onNextDay = { viewModel.navigateToNextDay() },
+                onSelectDate = { year, month, day -> viewModel.setSelectedDate(year, month, day) },
+                onToday = { viewModel.goToToday() }
+            )
             
-            // Boîte de dialogue de confirmation pour effacer toutes les activités
-            if (showClearConfirmDialog) {
-                AlertDialog(
-                    onDismissRequest = { showClearConfirmDialog = false },
-                    title = { Text("Confirmation") },
-                    text = { Text("Êtes-vous sûr de vouloir effacer toutes les activités ?") },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                viewModel.clearAllActivities()
-                                showClearConfirmDialog = false
-                            }
-                        ) {
-                            Text("Effacer")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(
-                            onClick = { showClearConfirmDialog = false }
-                        ) {
-                            Text("Annuler")
-                        }
-                    }
-                )
-            }
-            
-            // Boîte de dialogue pour sauvegarder la base de données
-            if (showBackupDialog) {
-                AlertDialog(
-                    onDismissRequest = { showBackupDialog = false },
-                    title = { Text("Sauvegarder les activités") },
-                    text = { 
-                        Column {
-                            Text("Entrez un nom pour cette sauvegarde (optionnel)")
-                            Spacer(modifier = Modifier.height(16.dp))
-                            OutlinedTextField(
-                                value = backupName,
-                                onValueChange = { backupName = it },
-                                label = { Text("Nom de la sauvegarde") },
-                                modifier = Modifier.fillMaxWidth(),
-                                singleLine = true,
-                                placeholder = { Text("Laissez vide pour utiliser la date/heure") }
-                            )
-                        }
-                    },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                viewModel.backupDatabase(context, backupName.trim())
-                                showBackupDialog = false
-                                backupName = ""
-                            }
-                        ) {
-                            Text("Sauvegarder")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(
-                            onClick = { 
-                                showBackupDialog = false 
-                                backupName = ""
-                            }
-                        ) {
-                            Text("Annuler")
-                        }
-                    }
-                )
-            }
-            
-            // Boîte de dialogue pour afficher la liste des sauvegardes
-            if (showBackupListDialog) {
-                BackupListDialog(
-                    backups = backups,
-                    onDismiss = { showBackupListDialog = false },
-                    onRestore = { backupPath ->
-                        // Maintenant on stocke juste le chemin et on montre une confirmation
-                        showBackupListDialog = false
-                        showRestoreConfirmDialog = backupPath
-                    },
-                    onDelete = { backupPath ->
-                        viewModel.deleteBackup(context, backupPath)
-                    }
-                )
-            }
-            
-            // Boîte de dialogue de confirmation pour restaurer une sauvegarde
-            showRestoreConfirmDialog?.let { backupPath ->
-                AlertDialog(
-                    onDismissRequest = { showRestoreConfirmDialog = null },
-                    title = { Text("Confirmation de restauration") },
-                    text = { 
+            // Contenu principal (activités du jour)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(horizontal = 16.dp)
+            ) {
+                if (dailyActivities.isEmpty()) {
+                    // Affichage lorsqu'il n'y a pas d'activités pour ce jour
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(
-                            "Êtes-vous sûr de vouloir restaurer cette sauvegarde ? " +
-                            "Toutes les activités actuelles seront remplacées."
-                        ) 
-                    },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                // Restaurer la sauvegarde avec la nouvelle approche JSON
-                                // Pas besoin de fermer la base de données manuellement
-                                viewModel.restoreDatabase(context, backupPath)
-                                showRestoreConfirmDialog = null
-                            }
-                        ) {
-                            Text("Restaurer")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showRestoreConfirmDialog = null }) {
-                            Text("Annuler")
+                            text = "Aucune activité pour ce jour",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                } else {
+                    // Liste des activités du jour sélectionné
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(dailyActivities.sortedBy { it.startTime }) { activity ->
+                            ActivityItem(
+                                activity = activity,
+                                timeFormat = timeFormat,
+                                onDelete = { viewModel.deleteActivity(activity.id) },
+                                onReactivate = { viewModel.reactivateActivity(activity.id) },
+                                onEditStartTime = { newTime -> viewModel.updateStartTime(activity.id, newTime) },
+                                onEditEndTime = { newTime -> viewModel.updateEndTime(activity.id, newTime) }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
-                )
-            }
-            
-            // Snackbar pour afficher le résultat des opérations
-            if (showSnackbar && operationResult != null) {
-                LaunchedEffect(operationResult) {
-                    // Le Snackbar se fermera automatiquement après un délai
-                    kotlinx.coroutines.delay(3000)
-                    showSnackbar = false
-                    viewModel.clearOperationResult()
                 }
+            }
+        }
+        
+        // Boîte de dialogue de confirmation pour effacer toutes les activités
+        if (showClearConfirmDialog) {
+            AlertDialog(
+                onDismissRequest = { showClearConfirmDialog = false },
+                title = { Text("Confirmation") },
+                text = { Text("Êtes-vous sûr de vouloir effacer toutes les activités ?") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            viewModel.clearAllActivities()
+                            showClearConfirmDialog = false
+                        }
+                    ) {
+                        Text("Effacer")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showClearConfirmDialog = false }
+                    ) {
+                        Text("Annuler")
+                    }
+                }
+            )
+        }
+        
+        // Boîte de dialogue pour sauvegarder la base de données
+        if (showBackupDialog) {
+            AlertDialog(
+                onDismissRequest = { showBackupDialog = false },
+                title = { Text("Sauvegarder les activités") },
+                text = { 
+                    Column {
+                        Text("Entrez un nom pour cette sauvegarde (optionnel)")
+                        Spacer(modifier = Modifier.height(16.dp))
+                        OutlinedTextField(
+                            value = backupName,
+                            onValueChange = { backupName = it },
+                            label = { Text("Nom de la sauvegarde") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            placeholder = { Text("Laissez vide pour utiliser la date/heure") }
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            viewModel.backupDatabase(context, backupName.trim())
+                            showBackupDialog = false
+                            backupName = ""
+                        }
+                    ) {
+                        Text("Sauvegarder")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { 
+                        showBackupDialog = false 
+                        backupName = ""
+                    }) {
+                        Text("Annuler")
+                    }
+                }
+            )
+        }
+        
+        // Boîte de dialogue pour afficher la liste des sauvegardes
+        if (showBackupListDialog) {
+            BackupListDialog(
+                backups = backups,
+                onDismiss = { showBackupListDialog = false },
+                onRestore = { backupPath -> 
+                    // Maintenant on stocke juste le chemin et on montre une confirmation
+                    showBackupListDialog = false
+                    showRestoreConfirmDialog = backupPath
+                },
+                onDelete = { backupPath -> 
+                    viewModel.deleteBackup(context, backupPath)
+                }
+            )
+        }
+        
+        // Boîte de dialogue de confirmation pour restaurer une sauvegarde
+        showRestoreConfirmDialog?.let { backupPath -> 
+            AlertDialog(
+                onDismissRequest = { showRestoreConfirmDialog = null },
+                title = { Text("Confirmation de restauration") },
+                text = { 
+                    Text(
+                        "Êtes-vous sûr de vouloir restaurer cette sauvegarde ? " +
+                        "Toutes les activités actuelles seront remplacées."
+                    ) 
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            // Restaurer la sauvegarde avec la nouvelle approche JSON
+                            // Pas besoin de fermer la base de données manuellement
+                            viewModel.restoreDatabase(context, backupPath)
+                            showRestoreConfirmDialog = null
+                        }
+                    ) {
+                        Text("Restaurer")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showRestoreConfirmDialog = null }) {
+                        Text("Annuler")
+                    }
+                }
+            )
+        }
+        
+        // Snackbar pour afficher le résultat des opérations
+        if (showSnackbar && operationResult != null) {
+            LaunchedEffect(operationResult) {
+                // Le Snackbar se fermera automatiquement après un délai
+                kotlinx.coroutines.delay(3000)
+                showSnackbar = false
+                viewModel.clearOperationResult()
             }
         }
     }
 }
 
+// Remaining code remains unchanged
 @Composable
 fun BackupListDialog(
     backups: List<Pair<String, String>>,
@@ -308,14 +382,14 @@ fun BackupListDialog(
                         .fillMaxWidth()
                         .heightIn(min = 100.dp, max = 300.dp)
                 ) {
-                    items(backups) { (name, path) ->
+                    items(backups) { (name, path) -> 
                         BackupItem(
                             backupName = name,
                             backupPath = path,
                             onRestore = { onRestore(path) },
                             onDelete = { showDeleteConfirmDialog = path }
                         )
-                        Divider()
+                        HorizontalDivider()
                     }
                 }
             }
@@ -328,7 +402,7 @@ fun BackupListDialog(
     )
     
     // Boîte de dialogue de confirmation de suppression
-    showDeleteConfirmDialog?.let { path ->
+    showDeleteConfirmDialog?.let { path -> 
         AlertDialog(
             onDismissRequest = { showDeleteConfirmDialog = null },
             title = { Text("Confirmation") },
@@ -417,122 +491,173 @@ fun BackupItem(
 @Composable
 fun ActivityItem(
     activity: Activity,
-    dateFormat: SimpleDateFormat,
+    timeFormat: SimpleDateFormat,
     onDelete: () -> Unit,
     onReactivate: () -> Unit,
     onEditStartTime: (Long) -> Unit,
     onEditEndTime: (Long) -> Unit
 ) {
-    var showEditStartDialog by remember { mutableStateOf(false) }
-    var showEditEndDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     
+    // Format de date pour l'affichage
+    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+    
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { showEditDialog = true },
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Type d'activité
+            // Type d'activité (centré et en majuscules)
             Text(
                 text = when (activity.type) {
-                    ActivityType.VS -> "Visite Semestrielle"
-                    ActivityType.ROUTE -> "Route"
-                    ActivityType.DOMICILE -> "Domicile"
-                    ActivityType.PAUSE -> "Pause"
+                    ActivityType.VS -> "VISITE SEMESTRIELLE"
+                    ActivityType.ROUTE -> "ROUTE"
+                    ActivityType.DOMICILE -> "DOMICILE"
+                    ActivityType.PAUSE -> "PAUSE"
                 },
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleLarge, // Texte plus grand
+                textAlign = TextAlign.Center
             )
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp)) // Réduit
             
-            // Heures de début et de fin
+            // Heures de début et de fin (avec textes centrés)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Column {
+                // Colonne Début
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
                     Text(
                         text = "Début",
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodyMedium, // Plus grand
+                        textAlign = TextAlign.Center
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = dateFormat.format(Date(activity.startTime)),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        IconButton(
-                            onClick = { showEditStartDialog = true },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Modifier l'heure de début"
-                            )
-                        }
-                    }
+                    Text(
+                        text = dateFormat.format(Date(activity.startTime)),
+                        style = MaterialTheme.typography.bodyLarge, // Plus grand
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = timeFormat.format(Date(activity.startTime)),
+                        style = MaterialTheme.typography.titleMedium, // Plus grand
+                        textAlign = TextAlign.Center
+                    )
                 }
                 
-                Column {
+                // Séparateur vertical
+                VerticalDivider(
+                    modifier = Modifier
+                        .height(60.dp)
+                        .padding(horizontal = 8.dp),
+                    thickness = 1.dp,
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                )
+                
+                // Colonne Fin
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
                     Text(
                         text = "Fin",
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodyMedium, // Plus grand
+                        textAlign = TextAlign.Center
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (activity.endTime != null) {
                         Text(
-                            text = activity.endTime?.let { dateFormat.format(Date(it)) } ?: "En cours",
-                            style = MaterialTheme.typography.bodyMedium
+                            text = dateFormat.format(Date(activity.endTime)),
+                            style = MaterialTheme.typography.bodyLarge, // Plus grand
+                            textAlign = TextAlign.Center
                         )
-                        IconButton(
-                            onClick = { showEditEndDialog = true },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Modifier l'heure de fin"
-                            )
-                        }
+                        Text(
+                            text = timeFormat.format(Date(activity.endTime)),
+                            style = MaterialTheme.typography.titleMedium, // Plus grand
+                            textAlign = TextAlign.Center
+                        )
+                    } else {
+                        Text(
+                            text = "En cours",
+                            style = MaterialTheme.typography.titleMedium, // Plus grand
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }
             
+            Spacer(modifier = Modifier.height(4.dp)) // Réduit
+            
+            // Durée de l'activité (centrée)
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
+                modifier = Modifier
+                    .fillMaxWidth(0.6f)  // Prend 60% de la largeur
+            ) {
+                Text(
+                    text = "Durée: ${
+                        StatisticsCalculator.formatDuration(
+                            activity.endTime?.let { it - activity.startTime } ?: 0L
+                        )
+                    }",
+                    style = MaterialTheme.typography.bodyLarge, // Plus grand
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp) // Padding vertical réduit
+                )
+            }
+            
             Spacer(modifier = Modifier.height(8.dp))
             
-            // Durée de l'activité
-            Text(
-                text = "Durée: ${
-                    StatisticsCalculator.formatDuration(
-                        activity.endTime?.let { it - activity.startTime } ?: 0L
-                    )
-                }",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            // Boutons d'action
+            // Boutons d'action - Format corrigé, plus compact
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.Center
             ) {
-                TextButton(onClick = onReactivate) {
+                // Bouton Réactiver (format compact)
+                TextButton(
+                    onClick = onReactivate,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
-                        contentDescription = "Réactiver"
+                        contentDescription = "Réactiver",
+                        modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Réactiver")
+                    Text(
+                        text = "Réactiver",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
                 
-                TextButton(onClick = { showDeleteConfirmDialog = true }) {
+                // Bouton Supprimer (format compact)
+                TextButton(
+                    onClick = { showDeleteConfirmDialog = true },
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Supprimer"
+                        contentDescription = "Supprimer",
+                        modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Supprimer")
+                    Text(
+                        text = "Supprimer",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
         }
@@ -562,7 +687,195 @@ fun ActivityItem(
         )
     }
     
-    // Note: Pour une implémentation complète, il faudrait ajouter des sélecteurs de date et heure
-    // pour éditer les heures de début et fin. On pourrait utiliser une bibliothèque comme
-    // Material DateTimePicker pour cela.
+    // Boîte de dialogue d'édition améliorée
+    if (showEditDialog) {
+        ActivityEditDialog(
+            activity = activity,
+            onDismiss = { showEditDialog = false },
+            onEditStartTime = { newTime -> 
+                onEditStartTime(newTime)
+                showEditDialog = false 
+            },
+            onEditEndTime = { newTime -> 
+                onEditEndTime(newTime)
+                showEditDialog = false 
+            }
+        )
+    }
+}
+
+/**
+ * Boîte de dialogue pour éditer les heures de début et de fin d'une activité
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ActivityEditDialog(
+    activity: Activity,
+    onDismiss: () -> Unit,
+    onEditStartTime: (Long) -> Unit,
+    onEditEndTime: (Long) -> Unit
+) {
+    // État pour savoir si on modifie l'heure de début ou de fin
+    var editingStartTime by remember { mutableStateOf(false) }
+    var editingEndTime by remember { mutableStateOf(false) }
+    
+    // États pour stocker temporairement les valeurs sélectionnées
+    var selectedStartTime by remember { mutableStateOf(activity.startTime) }
+    var selectedEndTime by remember { mutableStateOf(activity.endTime ?: System.currentTimeMillis()) }
+    
+    // Formats de date/heure pour l'affichage
+    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { 
+            Text(
+                text = when (activity.type) {
+                    ActivityType.VS -> "Modifier la visite semestrielle"
+                    ActivityType.ROUTE -> "Modifier le trajet"
+                    ActivityType.DOMICILE -> "Modifier l'activité à domicile"
+                    ActivityType.PAUSE -> "Modifier la pause"
+                }
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Bouton pour modifier l'heure de début
+                OutlinedButton(
+                    onClick = { editingStartTime = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Modifier l'heure de début"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Heure de début: ${timeFormat.format(Date(selectedStartTime))}"
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Bouton pour modifier l'heure de fin
+                OutlinedButton(
+                    onClick = { editingEndTime = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = activity.endTime != null // Désactivé si l'activité est en cours
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Modifier l'heure de fin"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = if (activity.endTime != null) 
+                            "Heure de fin: ${timeFormat.format(Date(selectedEndTime))}" 
+                        else 
+                            "Activité en cours"
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Fermer")
+            }
+        }
+    )
+    
+    // Boîte de dialogue pour sélectionner l'heure de début
+    if (editingStartTime) {
+        TimePickerDialog(
+            initialTimeMillis = selectedStartTime,
+            onDismissRequest = { editingStartTime = false },
+            onTimeSelected = { timeInMillis ->
+                selectedStartTime = timeInMillis
+                onEditStartTime(timeInMillis)
+                editingStartTime = false
+            }
+        )
+    }
+    
+    // Boîte de dialogue pour sélectionner l'heure de fin
+    if (editingEndTime) {
+        TimePickerDialog(
+            initialTimeMillis = selectedEndTime,
+            onDismissRequest = { editingEndTime = false },
+            onTimeSelected = { timeInMillis ->
+                selectedEndTime = timeInMillis
+                onEditEndTime(timeInMillis)
+                editingEndTime = false
+            }
+        )
+    }
+}
+
+/**
+ * Boîte de dialogue pour sélectionner une heure
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TimePickerDialog(
+    initialTimeMillis: Long,
+    onDismissRequest: () -> Unit,
+    onTimeSelected: (Long) -> Unit
+) {
+    val calendar = remember { Calendar.getInstance().apply { timeInMillis = initialTimeMillis } }
+    var hour by remember { mutableStateOf(calendar.get(Calendar.HOUR_OF_DAY)) }
+    var minute by remember { mutableStateOf(calendar.get(Calendar.MINUTE)) }
+    val timePickerState = rememberTimePickerState(
+        initialHour = hour,
+        initialMinute = minute,
+        is24Hour = true
+    )
+    
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text("Sélectionner une heure") },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                TimePicker(
+                    state = timePickerState,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    // Mettre à jour l'heure sélectionnée
+                    hour = timePickerState.hour
+                    minute = timePickerState.minute
+                    
+                    // Créer un nouvel objet Calendar avec l'heure sélectionnée mais en gardant la même date
+                    val newCalendar = Calendar.getInstance().apply { 
+                        timeInMillis = initialTimeMillis
+                        set(Calendar.HOUR_OF_DAY, hour)
+                        set(Calendar.MINUTE, minute)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+                    
+                    onTimeSelected(newCalendar.timeInMillis)
+                }
+            ) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("Annuler")
+            }
+        }
+    )
 }
