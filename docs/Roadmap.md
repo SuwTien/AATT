@@ -108,7 +108,13 @@
 
 ## Priorités pour la prochaine itération
 
-1. Finaliser l'implémentation des calculs statistiques selon les règles métier
-2. Ajouter des sélecteurs de date/heure pour la modification des activités
-3. Améliorer l'interface utilisateur de la page de statistiques
-4. Commencer à mettre en place des tests unitaires pour la logique métier
+1. **Filtrage par date dans la page d'édition** 🆕
+   - Ajout d'un affichage filtré par jour des activités terminées
+   - Interface minimaliste avec date cliquable pour sélection
+   - Affichage par défaut des activités du jour actuel
+   - Possibilité de naviguer facilement entre les différents jours
+
+2. Finaliser l'implémentation des calculs statistiques selon les règles métier
+3. Ajouter des sélecteurs de date/heure pour la modification des activités
+4. Améliorer l'interface utilisateur de la page de statistiques
+5. Commencer à mettre en place des tests unitaires pour la logique métier

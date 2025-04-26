@@ -24,6 +24,14 @@ class EditViewModel(private val repository: ActivityRepository) : ViewModel() {
     private val _completedActivities = MutableStateFlow<List<Activity>>(emptyList())
     val completedActivities: StateFlow<List<Activity>> = _completedActivities
     
+    // État pour la date sélectionnée (par défaut: aujourd'hui)
+    private val _selectedDate = MutableStateFlow(Calendar.getInstance())
+    val selectedDate: StateFlow<Calendar> = _selectedDate
+    
+    // État pour les activités du jour sélectionné
+    private val _dailyActivities = MutableStateFlow<List<Activity>>(emptyList())
+    val dailyActivities: StateFlow<List<Activity>> = _dailyActivities
+    
     // État pour les sauvegardes disponibles
     private val _backups = MutableStateFlow<List<Pair<String, String>>>(emptyList())
     val backups: StateFlow<List<Pair<String, String>>> = _backups
@@ -33,12 +41,64 @@ class EditViewModel(private val repository: ActivityRepository) : ViewModel() {
     val operationResult: StateFlow<OperationResult?> = _operationResult
     
     init {
-        // Collecter les activités terminées
+        // Collecter les activités terminées (toutes)
         viewModelScope.launch {
             repository.getCompletedActivities().collect { activities ->
                 _completedActivities.value = activities
             }
         }
+        
+        // Collecter les activités du jour sélectionné
+        refreshDailyActivities()
+    }
+    
+    /**
+     * Rafraîchit la liste des activités pour le jour sélectionné
+     */
+    private fun refreshDailyActivities() {
+        viewModelScope.launch {
+            repository.getActivitiesForDay(_selectedDate.value).collect { activities ->
+                _dailyActivities.value = activities
+            }
+        }
+    }
+    
+    /**
+     * Passe au jour suivant
+     */
+    fun navigateToNextDay() {
+        val calendar = _selectedDate.value.clone() as Calendar
+        calendar.add(Calendar.DAY_OF_MONTH, 1)
+        _selectedDate.value = calendar
+        refreshDailyActivities()
+    }
+    
+    /**
+     * Passe au jour précédent
+     */
+    fun navigateToPreviousDay() {
+        val calendar = _selectedDate.value.clone() as Calendar
+        calendar.add(Calendar.DAY_OF_MONTH, -1)
+        _selectedDate.value = calendar
+        refreshDailyActivities()
+    }
+    
+    /**
+     * Définit une date spécifique
+     */
+    fun setSelectedDate(year: Int, month: Int, day: Int) {
+        val calendar = Calendar.getInstance()
+        calendar.set(year, month, day)
+        _selectedDate.value = calendar
+        refreshDailyActivities()
+    }
+    
+    /**
+     * Revient à la date d'aujourd'hui
+     */
+    fun goToToday() {
+        _selectedDate.value = Calendar.getInstance()
+        refreshDailyActivities()
     }
     
     /**

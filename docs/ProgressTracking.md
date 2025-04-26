@@ -19,6 +19,8 @@
 - [x] EditScreen pour gérer les activités terminées
 - [x] StatsScreen (structure de base)
 - [x] Composants réutilisables (ActivityButton, etc.)
+- [x] Interfaces de dialogue optimisées et compactes pour l'édition des activités
+- [x] Sélecteurs de date et heure améliorés pour une meilleure ergonomie
 
 ### Stockage des données
 - [x] Base de données active dans le stockage interne de l'application
@@ -95,6 +97,15 @@ Architecture flexible pour permettre le calcul des statistiques avec des règles
 
 ## Journal des modifications
 
+### 2025-04-27
+- Optimisation de l'interface utilisateur des boîtes de dialogue d'édition
+- Refonte du sélecteur de date avec affichage complet du mois sans défilement
+- Amélioration du DateSelector avec boutons transparents et hauteur réduite
+- Réorganisation de l'affichage des dates et heures dans le dialogue d'édition
+- Optimisation de l'espace vertical dans l'interface
+- Implémentation d'onglets transparents avec encadrement pour une meilleure navigation
+- Amélioration de l'affichage des activités avec textes plus grands et centrés
+
 ### 2025-04-26
 - Migration du système de sauvegarde/restauration vers une approche basée sur JSON
 - Création d'une classe `DatabaseBackupHelper` pour gérer l'exportation/importation des données
@@ -112,6 +123,49 @@ Architecture flexible pour permettre le calcul des statistiques avec des règles
 - Correction du bug "value missed" lié aux paramètres nullables dans les requêtes Room
 
 # Suivi de progression du projet AATT
+
+## 27 avril 2025 - Optimisation de l'affichage des activités et amélioration de l'ergonomie
+
+### Problème résolu
+- Interface utilisateur trop encombrée avec des marges et paddings excessifs
+- Textes trop petits rendant la lecture difficile sur certains appareils
+- Utilisation inefficace de l'espace vertical disponible
+
+### Améliorations apportées
+1. **Refonte de l'affichage des activités dans EditScreen**
+   - Réduction des paddings verticaux pour une meilleure utilisation de l'espace
+   - Augmentation de la taille des textes pour une meilleure lisibilité
+   - Conversion des titres d'activités en majuscules pour une meilleure hiérarchie visuelle
+   - Centrage des informations pour une meilleure cohérence
+   
+2. **Optimisation des styles typographiques**
+   - Utilisation de `typography.titleLarge` pour les titres d'activités
+   - Passage à `typography.bodyLarge` et `typography.titleMedium` pour les dates et heures
+   - Choix de styles offrant un meilleur contraste et une meilleure lisibilité
+   
+3. **Ajustement des espacements**
+   - Réduction des espacements verticaux de 8.dp à 4.dp
+   - Optimisation des paddings dans les Cards pour maximiser l'espace utilisable
+   - Conception plus compacte tout en préservant la lisibilité
+
+### Impact sur l'expérience utilisateur
+- Interface plus efficace montrant plus d'informations sans défilement
+- Meilleure lisibilité des informations essentielles (types d'activités, heures)
+- Expérience utilisateur plus fluide avec moins de défilements nécessaires
+- Hiérarchie visuelle plus claire entre les différents types d'informations
+
+### Améliorations techniques
+- Optimisation des composables Jetpack Compose
+- Utilisation plus efficace du système typographique de Material3
+- Réduction de la hauteur des éléments UI sans compromettre l'expérience tactile
+
+### Captures d'écran comparatives
+- Des captures d'écran avant/après ont été prises pour documenter les améliorations (à ajouter)
+
+### Retours utilisateurs
+- Interface plus lisible et agréable à utiliser
+- Information plus facile à scanner visuellement
+- Expérience plus professionnelle et raffinée
 
 ## 26 avril 2025 - Système robuste de sauvegarde et restauration JSON
 
