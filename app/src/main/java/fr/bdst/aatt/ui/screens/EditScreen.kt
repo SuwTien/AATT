@@ -10,14 +10,18 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -707,7 +711,6 @@ fun ActivityItem(
 
 /**
  * Boîte de dialogue pour éditer les heures de début et de fin d'une activité
- * Utilise le composant DateTimePickerDialog pour la sélection
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -717,168 +720,650 @@ fun ActivityEditDialog(
     onEditStartTime: (Long) -> Unit,
     onEditEndTime: (Long) -> Unit
 ) {
-    // État pour savoir si on édite l'heure de début ou de fin
-    var editingStartTime by remember { mutableStateOf(true) }
+    // États pour savoir ce qu'on est en train d'éditer
+    var editingStart by remember { mutableStateOf(true) } // true = début, false = fin
+    var showDatePicker by remember { mutableStateOf(true) } // true = afficher le calendrier, false = afficher l'horloge
     
-    // États pour stocker temporairement les valeurs sélectionnées
-    var selectedStartTime by remember { mutableStateOf(activity.startTime) }
-    var selectedEndTime by remember { mutableStateOf(activity.endTime ?: System.currentTimeMillis()) }
+    // Calendriers pour stocker les dates/heures en cours d'édition (mutableStateOf pour réagir aux changements)
+    var startCalendar by remember { 
+        mutableStateOf(Calendar.getInstance().apply { timeInMillis = activity.startTime })
+    }
+    var endCalendar by remember { 
+        mutableStateOf(
+            Calendar.getInstance().apply { 
+                timeInMillis = activity.endTime ?: System.currentTimeMillis() 
+            }
+        )
+    }
     
-    // Format de date pour l'affichage
+    // Variables d'état pour suivre les modifications en temps réel
+    var selectedYear by remember { mutableStateOf(0) }
+    var selectedMonth by remember { mutableStateOf(0) }
+    var selectedDay by remember { mutableStateOf(0) }
+    var selectedHour by remember { mutableStateOf(0) }
+    var selectedMinute by remember { mutableStateOf(0) }
+    
+    // Pour le calendrier
+    var displayedMonth by remember { mutableStateOf(0) }
+    var displayedYear by remember { mutableStateOf(0) }
+    
+    // Mettre à jour les valeurs sélectionnées quand on change d'onglet
+    LaunchedEffect(editingStart) {
+        val calendar = if (editingStart) startCalendar else endCalendar
+        selectedYear = calendar.get(Calendar.YEAR)
+        selectedMonth = calendar.get(Calendar.MONTH)
+        selectedDay = calendar.get(Calendar.DAY_OF_MONTH)
+        selectedHour = calendar.get(Calendar.HOUR_OF_DAY)
+        selectedMinute = calendar.get(Calendar.MINUTE)
+        displayedMonth = selectedMonth
+        displayedYear = selectedYear
+    }
+    
+    // Fonction pour appliquer les modifications au calendrier actuel
+    fun applyCurrentChanges() {
+        val calendar = if (editingStart) startCalendar else endCalendar
+        calendar.set(Calendar.YEAR, selectedYear)
+        calendar.set(Calendar.MONTH, selectedMonth)
+        calendar.set(Calendar.DAY_OF_MONTH, selectedDay)
+        calendar.set(Calendar.HOUR_OF_DAY, selectedHour)
+        calendar.set(Calendar.MINUTE, selectedMinute)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        
+        // Créer un nouveau Calendar pour forcer la recomposition
+        if (editingStart) {
+            startCalendar = calendar.clone() as Calendar
+        } else {
+            endCalendar = calendar.clone() as Calendar
+        }
+    }
+    
+    // Surveillez les changements dans les valeurs sélectionnées et mettez à jour le calendrier correspondant
+    LaunchedEffect(selectedYear, selectedMonth, selectedDay, selectedHour, selectedMinute) {
+        applyCurrentChanges()
+    }
+    
+    // Formats pour l'affichage des dates et heures
     val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     
-    // Détermine le titre et la timestamp actuellement en édition
-    val currentTitle = when (activity.type) {
-        ActivityType.VS -> if (editingStartTime) "Début de visite semestrielle" else "Fin de visite semestrielle"
-        ActivityType.ROUTE -> if (editingStartTime) "Début de trajet" else "Fin de trajet"
-        ActivityType.DOMICILE -> if (editingStartTime) "Début d'activité à domicile" else "Fin d'activité à domicile"
-        ActivityType.PAUSE -> if (editingStartTime) "Début de pause" else "Fin de pause"
-        ActivityType.DEPLACEMENT -> if (editingStartTime) "Début de déplacement" else "Fin de déplacement"
+    // Pour calculer la durée totale (recalculée à chaque changement des calendriers)
+    val durationMillis by derivedStateOf {
+        if (activity.endTime != null) {
+            endCalendar.timeInMillis - startCalendar.timeInMillis
+        } else 0L
     }
     
-    val currentTimestamp = if (editingStartTime) selectedStartTime else selectedEndTime
+    // Pour sauvegarder les modifications
+    fun saveChanges() {
+        if (editingStart) {
+            onEditStartTime(startCalendar.timeInMillis)
+        } else if (activity.endTime != null) {
+            onEditEndTime(endCalendar.timeInMillis)
+        }
+    }
     
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { 
-            Text(
-                text = when (activity.type) {
-                    ActivityType.VS -> "Modifier la visite semestrielle"
-                    ActivityType.ROUTE -> "Modifier le trajet"
-                    ActivityType.DOMICILE -> "Modifier l'activité à domicile"
-                    ActivityType.PAUSE -> "Modifier la pause"
-                    ActivityType.DEPLACEMENT -> "Modifier le déplacement"
-                }
-            )
-        },
-        text = {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp), // Réduction du padding vertical
+            shape = RoundedCornerShape(16.dp)
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp), // Réduction du padding vertical
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Onglets pour choisir entre début et fin
+                // Titre du dialogue - type d'activité affiché en majuscules
+                Text(
+                    text = when (activity.type) {
+                        ActivityType.VS -> "VISITE SEMESTRIELLE"
+                        ActivityType.ROUTE -> "ROUTE"
+                        ActivityType.DOMICILE -> "DOMICILE"
+                        ActivityType.PAUSE -> "PAUSE"
+                        ActivityType.DEPLACEMENT -> "DÉPLACEMENT"
+                    },
+                    style = MaterialTheme.typography.headlineSmall,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                )
+                
+                // Boutons Début / Fin - padding réduit
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(bottom = 4.dp) // Réduit de 8dp à 4dp
                 ) {
-                    // Onglet Début
+                    // Bouton Début
                     Column(
                         modifier = Modifier
                             .weight(1f)
-                            .padding(end = 8.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (editingStartTime) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant)
-                            .clickable { editingStartTime = true }
-                            .padding(8.dp),
+                            .clickable { editingStart = true },
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             text = "Début",
                             style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                            color = if (editingStartTime) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                            fontWeight = if (editingStart) FontWeight.Bold else FontWeight.Normal,
+                            color = if (editingStart) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                         )
-                        Text(
-                            text = timeFormat.format(Date(selectedStartTime)),
-                            style = MaterialTheme.typography.titleMedium,
-                            textAlign = TextAlign.Center,
-                            color = if (editingStartTime) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                        Spacer(modifier = Modifier.height(2.dp))
+                        // Indicateur de sélection
+                        HorizontalDivider(
+                            modifier = Modifier.width(40.dp),
+                            thickness = 2.dp,
+                            color = if (editingStart) MaterialTheme.colorScheme.primary else Color.Transparent
                         )
                     }
                     
-                    // Onglet Fin
+                    // Bouton Fin
                     Column(
                         modifier = Modifier
                             .weight(1f)
-                            .padding(start = 8.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (!editingStartTime) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant)
                             .clickable(enabled = activity.endTime != null) { 
-                                if (activity.endTime != null) {
-                                    editingStartTime = false 
-                                }
-                            }
-                            .padding(8.dp),
+                                if (activity.endTime != null) editingStart = false 
+                            },
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             text = if (activity.endTime != null) "Fin" else "En cours",
                             style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                            color = if (!editingStartTime && activity.endTime != null) 
-                                MaterialTheme.colorScheme.onPrimaryContainer 
+                            fontWeight = if (!editingStart) FontWeight.Bold else FontWeight.Normal,
+                            color = if (!editingStart) 
+                                MaterialTheme.colorScheme.primary
                             else if (activity.endTime == null)
-                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                            else 
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                            else
+                                MaterialTheme.colorScheme.onSurface
                         )
-                        Text(
-                            text = if (activity.endTime != null) 
-                                timeFormat.format(Date(selectedEndTime)) 
-                            else 
-                                "---",
-                            style = MaterialTheme.typography.titleMedium,
-                            textAlign = TextAlign.Center,
-                            color = if (!editingStartTime && activity.endTime != null) 
-                                MaterialTheme.colorScheme.onPrimaryContainer 
-                            else if (activity.endTime == null)
-                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                            else 
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                        Spacer(modifier = Modifier.height(2.dp))
+                        // Indicateur de sélection
+                        HorizontalDivider(
+                            modifier = Modifier.width(40.dp),
+                            thickness = 2.dp,
+                            color = if (!editingStart) MaterialTheme.colorScheme.primary else Color.Transparent
                         )
                     }
                 }
                 
-                // Bouton pour ouvrir le sélecteur
-                OutlinedButton(
-                    onClick = { 
-                        // L'ouverture du DateTimePickerDialog se fait en dessous via les variables d'état
-                    },
+                // Séparateur
+                HorizontalDivider(
+                    modifier = Modifier.fillMaxWidth(),
+                    thickness = 1.dp,
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                )
+                
+                // Spacer réduit
+                Spacer(modifier = Modifier.height(4.dp)) // Réduit de 8dp à 4dp
+                
+                // Icônes Date / Heure - positionnement amélioré
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly // Utilisation de SpaceEvenly au lieu de Center
+                ) {
+                    // Colonne Calendrier
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.weight(1f) // Poids égal pour les deux colonnes
+                    ) {
+                        IconButton(
+                            onClick = { showDatePicker = true },
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = "Sélectionner la date",
+                                tint = if (showDatePicker) 
+                                    MaterialTheme.colorScheme.primary 
+                                else 
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    }
+                    
+                    // Colonne Horloge
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.weight(1f) // Poids égal pour les deux colonnes
+                    ) {
+                        IconButton(
+                            onClick = { showDatePicker = false },
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Schedule,
+                                contentDescription = "Sélectionner l'heure",
+                                tint = if (!showDatePicker) 
+                                    MaterialTheme.colorScheme.primary 
+                                else 
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    }
+                }
+                
+                // Spacer réduit
+                Spacer(modifier = Modifier.height(4.dp)) // Réduit de 8dp à 4dp
+                
+                // Zone de sélection dynamique - hauteur légèrement réduite
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp), // Réduit de 240dp à 220dp
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(4.dp), // Réduit de 8dp à 4dp
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (showDatePicker) {
+                            // Calendrier visuel
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                // Entête du calendrier avec navigation mois/année
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 4.dp), // Réduit de 8dp à 4dp
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    // Bouton mois précédent
+                                    IconButton(onClick = {
+                                        if (displayedMonth > 0) {
+                                            displayedMonth--
+                                        } else {
+                                            displayedMonth = 11
+                                            displayedYear--
+                                        }
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                            contentDescription = "Mois précédent"
+                                        )
+                                    }
+                                    
+                                    // Affichage mois et année
+                                    val monthNames = listOf(
+                                        "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+                                        "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+                                    )
+                                    Text(
+                                        text = "${monthNames[displayedMonth]} $displayedYear",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    
+                                    // Bouton mois suivant
+                                    IconButton(onClick = {
+                                        if (displayedMonth < 11) {
+                                            displayedMonth++
+                                        } else {
+                                            displayedMonth = 0
+                                            displayedYear++
+                                        }
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                            contentDescription = "Mois suivant"
+                                        )
+                                    }
+                                }
+                                
+                                // Jours de la semaine
+                                val weekDays = listOf("Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di")
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    weekDays.forEach { day -> 
+                                        Text(
+                                            text = day,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            modifier = Modifier.weight(1f),
+                                            textAlign = TextAlign.Center,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                                
+                                Spacer(modifier = Modifier.height(2.dp)) // Réduit de 4dp à 2dp
+                                
+                                // Grille des jours du mois
+                                val calendar = Calendar.getInstance().apply {
+                                    set(Calendar.YEAR, displayedYear)
+                                    set(Calendar.MONTH, displayedMonth)
+                                    set(Calendar.DAY_OF_MONTH, 1)
+                                }
+                                
+                                // Déterminer le premier jour du mois (0 = dimanche, 1 = lundi, etc.)
+                                val firstDayOfMonth = calendar.get(Calendar.DAY_OF_WEEK)
+                                // Ajuster pour commencer la semaine le lundi (1) au lieu de dimanche (0)
+                                val firstDayOffset = (firstDayOfMonth + 5) % 7
+                                
+                                // Obtenir le nombre de jours dans le mois
+                                val daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+                                
+                                // Calculer le nombre de semaines nécessaires pour afficher ce mois
+                                val numRows = (daysInMonth + firstDayOffset + 6) / 7
+                                
+                                // Afficher les semaines dans le mois
+                                Column(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    // Utiliser un LazyVerticalGrid ici cause le problème de chevauchement
+                                    // On le remplace par des Row dans une Column
+                                    for (row in 0 until numRows) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(24.dp), // Hauteur fixe pour chaque ligne
+                                            horizontalArrangement = Arrangement.SpaceEvenly
+                                        ) {
+                                            for (col in 0 until 7) {
+                                                val dayNumber = row * 7 + col + 1 - firstDayOffset
+                                                
+                                                if (dayNumber in 1..daysInMonth) {
+                                                    // C'est le jour sélectionné (même année, mois et jour)
+                                                    val isSelected = dayNumber == selectedDay && 
+                                                                      displayedMonth == selectedMonth && 
+                                                                      displayedYear == selectedYear
+                                                    
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .weight(1f)
+                                                            .aspectRatio(1f)
+                                                            .clip(CircleShape)
+                                                            .background(
+                                                                if (isSelected) 
+                                                                    MaterialTheme.colorScheme.primary 
+                                                                else 
+                                                                    Color.Transparent
+                                                            )
+                                                            .clickable {
+                                                                selectedDay = dayNumber
+                                                                selectedMonth = displayedMonth
+                                                                selectedYear = displayedYear
+                                                            }
+                                                            .padding(2.dp),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        Text(
+                                                            text = dayNumber.toString(),
+                                                            style = MaterialTheme.typography.bodyMedium,
+                                                            color = if (isSelected) 
+                                                                MaterialTheme.colorScheme.onPrimary 
+                                                            else 
+                                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                                        )
+                                                    }
+                                                } else {
+                                                    // Case vide pour les jours hors du mois
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .weight(1f)
+                                                            .aspectRatio(1f)
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            // Sélecteur d'heure (horloge simplifiée)
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                // Une rangée pour sélectionner l'heure et les minutes
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    // Sélecteur d'heure (0-23)
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text("Heure", style = MaterialTheme.typography.bodyMedium)
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            IconButton(
+                                                onClick = { 
+                                                    selectedHour = if (selectedHour > 0) selectedHour - 1 else 23
+                                                }
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                                    contentDescription = "Heure précédente"
+                                                )
+                                            }
+                                            
+                                            Text(
+                                                text = selectedHour.toString().padStart(2, '0'),
+                                                style = MaterialTheme.typography.headlineMedium
+                                            )
+                                            
+                                            IconButton(
+                                                onClick = { 
+                                                    selectedHour = if (selectedHour < 23) selectedHour + 1 else 0
+                                                }
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                                    contentDescription = "Heure suivante"
+                                                )
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Séparateur
+                                    Text(
+                                        text = ":",
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        modifier = Modifier.padding(horizontal = 8.dp)
+                                    )
+                                    
+                                    // Sélecteur de minutes (0-59)
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text("Minute", style = MaterialTheme.typography.bodyMedium)
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            IconButton(
+                                                onClick = { 
+                                                    selectedMinute = if (selectedMinute > 0) selectedMinute - 1 else 59
+                                                }
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                                    contentDescription = "Minute précédente"
+                                                )
+                                            }
+                                            
+                                            Text(
+                                                text = selectedMinute.toString().padStart(2, '0'),
+                                                style = MaterialTheme.typography.headlineMedium
+                                            )
+                                            
+                                            IconButton(
+                                                onClick = { 
+                                                    selectedMinute = if (selectedMinute < 59) selectedMinute + 1 else 0
+                                                }
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                                    contentDescription = "Minute suivante"
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Spacer réduit
+                Spacer(modifier = Modifier.height(8.dp)) // Réduit de 16dp à 8dp
+                
+                // Affichage des deux colonnes Début / Fin - hauteur optimisée
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Colonne Début
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 4.dp, vertical = 2.dp), // Réduit
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Début",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = if (editingStart) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(2.dp)) // Réduit de 4dp à 2dp
+                        Text(
+                            text = dateFormat.format(startCalendar.time),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Spacer(modifier = Modifier.height(1.dp)) // Réduit de 2dp à 1dp
+                        Text(
+                            text = timeFormat.format(startCalendar.time),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    
+                    // Séparateur vertical - hauteur réduite
+                    VerticalDivider(
+                        modifier = Modifier
+                            .height(70.dp) // Réduit de 80dp à 70dp
+                            .padding(horizontal = 8.dp),
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                    )
+                    
+                    // Colonne Fin
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 4.dp, vertical = 2.dp), // Réduit
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Fin",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = if (!editingStart) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(2.dp)) // Réduit de 4dp à 2dp
+                        if (activity.endTime != null) {
+                            Text(
+                                text = dateFormat.format(endCalendar.time),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Spacer(modifier = Modifier.height(1.dp)) // Réduit de 2dp à 1dp
+                            Text(
+                                text = timeFormat.format(endCalendar.time),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        } else {
+                            Text(
+                                text = "En cours",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                            Spacer(modifier = Modifier.height(1.dp)) // Réduit de 2dp à 1dp
+                            Text(
+                                text = "---",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
+                }
+                
+                // Spacer réduit
+                Spacer(modifier = Modifier.height(8.dp)) // Réduit de 16dp à 8dp
+                
+                // Affichage du temps total - padding réduit
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Modifier"
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Modifier " + (if (editingStartTime) "l'heure de début" else "l'heure de fin")
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp), // Réduit de 8dp à 6dp
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Temps total:",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = if (activity.endTime != null) 
+                                StatisticsCalculator.formatDuration(durationMillis)
+                            else "En cours",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                
+                // Spacer réduit
+                Spacer(modifier = Modifier.height(12.dp)) // Réduit de 24dp à 12dp
+                
+                // Boutons d'action
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(
+                        onClick = onDismiss
+                    ) {
+                        Text("Annuler")
+                    }
+                    
+                    Button(
+                        onClick = { 
+                            saveChanges()
+                            onDismiss()
+                        }
+                    ) {
+                        Text("Enregistrer")
+                    }
                 }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Fermer")
-            }
         }
-    )
-    
-    // Affichage du DateTimePickerDialog lorsque nécessaire
-    if (editingStartTime) {
-        DateTimePickerDialog(
-            timestamp = selectedStartTime,
-            onDismissRequest = { /* Ne rien faire, on reste dans la boîte de dialogue principale */ },
-            onConfirm = { newTimestamp ->
-                selectedStartTime = newTimestamp
-                onEditStartTime(newTimestamp)
-            },
-            title = currentTitle
-        )
-    } else if (activity.endTime != null) {
-        DateTimePickerDialog(
-            timestamp = selectedEndTime,
-            onDismissRequest = { /* Ne rien faire, on reste dans la boîte de dialogue principale */ },
-            onConfirm = { newTimestamp ->
-                selectedEndTime = newTimestamp
-                onEditEndTime(newTimestamp)
-            },
-            title = currentTitle
-        )
     }
 }
