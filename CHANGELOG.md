@@ -1,5 +1,30 @@
 # Historique des versions - AATT (Atlantic Automatique Time Tracker)
 
+## Version de développement - 28 avril 2025
+
+### Refactoring majeur du module statistiques 📊
+
+- Architecture modulaire pour les écrans de statistiques :
+  - Séparation en fichiers distincts : `DailyStatsScreen.kt`, `WeeklyStatsScreen.kt`, `MonthlyStatsScreen.kt`
+  - Création d'un fichier `StatsCommonComponents.kt` pour les composants partagés
+  - Restructuration de `StatsScreen.kt` comme point d'entrée principal
+
+- Documentation technique :
+  - Création du document `StatisticsImplementation.md` détaillant l'architecture technique
+  - Mise à jour de `StatisticsScreenDesign.md` avec la nouvelle structure
+  - Plan de développement détaillé dans `ProgressTracking.md`
+
+- Améliorations techniques :
+  - Remplacement de `Divider` par `HorizontalDivider` (nouvelle API Material3)
+  - Résolution des problèmes de typage avec les triplets
+  - Correction des référencements d'icônes manquantes
+
+### Impacts positifs
+- Meilleure séparation des préoccupations
+- Code plus facile à maintenir et à faire évoluer
+- Réduction de la duplication de code
+- Meilleure organisation du projet
+
 ## Version 1.0.0 (Prévue - 2025) - Code version Play Store : 1
 
 ### Première version prévue pour le Google Play Store 🎉
