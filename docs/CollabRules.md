@@ -25,6 +25,8 @@ je te laisse lire la suite.
 
 5. En cas de difficulté, on n'hésite pas à explorer le code existant pour comprendre comment les fonctions sont censées marcher.
 
+6. On privilégie la documentation détaillée des fonctionnalités avant leur implémentation (comme avec StatisticsRules.md et StatisticsScreenDesign.md) pour clarifier les attentes et faciliter le développement.
+
 # Notes et observations pour la continuité
 
 1. **Style de communication préféré** :
