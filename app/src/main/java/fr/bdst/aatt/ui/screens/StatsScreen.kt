@@ -2,16 +2,15 @@ package fr.bdst.aatt.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import fr.bdst.aatt.data.repository.ActivityRepository
-import fr.bdst.aatt.data.util.StatisticsCalculator
-import kotlinx.coroutines.flow.map
-import java.util.*
+import fr.bdst.aatt.viewmodel.StatsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -19,9 +18,28 @@ fun StatsScreen(
     repository: ActivityRepository,
     navigateBack: () -> Unit
 ) {
-    // États pour suivre la période sélectionnée
+    // Création du ViewModel avec sa Factory
+    val viewModel: StatsViewModel = viewModel(
+        factory = StatsViewModel.Factory(repository)
+    )
+    
+    // États pour suivre l'onglet sélectionné
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabTitles = listOf("Jour", "Semaine", "Mois")
+    
+    // Collecte des états du ViewModel
+    val selectedDate by viewModel.selectedDate.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    
+    // Effet de chargement initial des données
+    LaunchedEffect(key1 = selectedTabIndex) {
+        when (selectedTabIndex) {
+            0 -> viewModel.loadDailyStats()
+            1 -> viewModel.loadWeeklyStats()
+            2 -> viewModel.loadMonthlyStats()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -30,7 +48,7 @@ fun StatsScreen(
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Retour"
                         )
                     }
@@ -54,84 +72,48 @@ fun StatsScreen(
                 }
             }
             
+            // En-tête de navigation (période précédente/suivante)
+            PeriodNavigationHeader(
+                selectedTabIndex = selectedTabIndex,
+                selectedDate = selectedDate,
+                viewModel = viewModel,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            )
+            
             // Contenu de l'onglet sélectionné
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp)
             ) {
                 when (selectedTabIndex) {
-                    0 -> DailyStatsContent(repository)
-                    1 -> WeeklyStatsContent(repository)
-                    2 -> MonthlyStatsContent(repository)
+                    0 -> DailyStatsContent(viewModel)
+                    1 -> WeeklyStatsContent(viewModel)
+                    2 -> MonthlyStatsContent(viewModel)
+                }
+                
+                // Indicateur de chargement
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .align(Alignment.Center)
+                    )
+                }
+                
+                // Message d'erreur éventuel
+                errorMessage?.let { message ->
+                    Snackbar(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .align(Alignment.BottomCenter)
+                    ) {
+                        Text(message)
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun DailyStatsContent(repository: ActivityRepository) {
-    // Pour une vraie implémentation, nous collecterions les activités du jour
-    // et calculerions les statistiques. Pour l'instant, c'est un placeholder.
-    
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Statistiques journalières",
-            style = MaterialTheme.typography.headlineSmall
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(
-            text = "Cette fonctionnalité sera implémentée prochainement",
-            style = MaterialTheme.typography.bodyLarge
-        )
-    }
-}
-
-@Composable
-fun WeeklyStatsContent(repository: ActivityRepository) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Statistiques hebdomadaires",
-            style = MaterialTheme.typography.headlineSmall
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(
-            text = "Cette fonctionnalité sera implémentée prochainement",
-            style = MaterialTheme.typography.bodyLarge
-        )
-    }
-}
-
-@Composable
-fun MonthlyStatsContent(repository: ActivityRepository) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Statistiques mensuelles",
-            style = MaterialTheme.typography.headlineSmall
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(
-            text = "Cette fonctionnalité sera implémentée prochainement",
-            style = MaterialTheme.typography.bodyLarge
-        )
     }
 }

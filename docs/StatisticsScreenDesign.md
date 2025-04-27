@@ -2,6 +2,21 @@
 
 Ce document détaille la conception UI des trois modes d'affichage des statistiques dans l'application AATT : jour, semaine et mois.
 
+## Architecture technique
+
+L'écran des statistiques est implémenté selon une architecture modulaire pour faciliter la maintenance et l'évolution du code :
+
+| Fichier | Responsabilité |
+|---------|----------------|
+| `StatsScreen.kt` | Structure principale avec navigation par onglets et chargement conditionnel |
+| `DailyStatsScreen.kt` | Implémentation de la vue statistiques journalières |
+| `WeeklyStatsScreen.kt` | Implémentation de la vue statistiques hebdomadaires |
+| `MonthlyStatsScreen.kt` | Implémentation de la vue statistiques mensuelles |
+| `StatsCommonComponents.kt` | Composants partagés entre les différentes vues (navigation, cartes d'activités, etc.) |
+| `StatsViewModel.kt` | Logique métier et gestion des données pour les statistiques |
+
+Cette séparation permet une meilleure organisation du code, une séparation claire des préoccupations, et facilite les modifications spécifiques à chaque mode d'affichage.
+
 ## Principes généraux d'affichage
 
 ### Navigation et sélection de période

@@ -18,7 +18,7 @@
 - [x] MainScreen avec boutons d'activité et affichage de l'activité en cours
 - [x] Organisation optimisée des boutons d'activité en deux rangées (3+2)
 - [x] EditScreen pour gérer les activités terminées
-- [x] StatsScreen (structure de base)
+- [x] StatsScreen avec trois onglets (jour, semaine, mois) - structure modulaire
 - [x] Composants réutilisables (ActivityButton, etc.)
 - [x] Interfaces de dialogue optimisées et compactes pour l'édition des activités
 - [x] Sélecteurs de date et heure améliorés pour une meilleure ergonomie
@@ -56,6 +56,12 @@ Architecture flexible pour permettre le calcul des statistiques avec des règles
 **Solution implémentée :**
 1. Classe `StatisticsCalculator` qui encapsule les règles métier (ex: déduction de 1h30 par jour pour les ROUTE)
 2. Affichage par onglets (jour, semaine, mois)
+3. Architecture modulaire avec séparation claire des responsabilités:
+   - `StatsScreen.kt`: Structure principale et navigation entre onglets
+   - `DailyStatsScreen.kt`: Affichage des statistiques journalières
+   - `WeeklyStatsScreen.kt`: Affichage des statistiques hebdomadaires
+   - `MonthlyStatsScreen.kt`: Affichage des statistiques mensuelles
+   - `StatsCommonComponents.kt`: Composants partagés entre les différents écrans
 
 ## Défis rencontrés et solutions
 
@@ -73,6 +79,7 @@ Architecture flexible pour permettre le calcul des statistiques avec des règles
 **Solution :**
 - Ajout de l'annotation `@OptIn(ExperimentalMaterial3Api::class)` 
 - Simplification de certains composants UI pour éviter les problèmes de compatibilité
+- Remplacement de `Divider` par `HorizontalDivider` conformément aux nouvelles recommandations Material3
 
 ### Problème de restauration de la base de données
 **Problème :** La restauration de la base de données échouait avec l'erreur "connection pool has been closed" et les activités n'étaient pas correctement restaurées.
@@ -90,15 +97,80 @@ Architecture flexible pour permettre le calcul des statistiques avec des règles
 - [ ] Calculs statistiques réels (avec rules business)
 - [x] Boîtes de dialogue pour l'édition des heures de début/fin des activités
 - [ ] Amélioration de l'UI/UX
+- [ ] Finalisation des écrans de statistiques
 
 ### Améliorations techniques prévues
 - [ ] Tests unitaires pour les principales fonctionnalités
 - [ ] Optimisations de performance
 - [ ] Surveillance des problèmes potentiels liés au stockage externe
+- [ ] Mise à jour continue de l'interface utilisateur selon les évolutions de Material3
+
+## Plan de développement des écrans statistiques
+
+Après la migration réussie des écrans de statistiques vers une architecture modulaire, les prochaines étapes de développement sont planifiées selon la priorité suivante :
+
+### Phase 1: Précision fonctionnelle (Mai 2025)
+1. **Vérification et correction des calculs statistiques**
+   - Implémenter correctement la déduction de 1h30 par jour pour les activités ROUTE
+   - S'assurer que les calculs sont cohérents entre les vues journalières, hebdomadaires et mensuelles
+   - Compléter les méthodes du `StatisticsCalculator` pour gérer tous les cas d'usage
+
+2. **Enrichissement du StatisticsViewModel**
+   - Ajouter les méthodes manquantes pour calculer les statistiques spécifiques à chaque vue
+   - Implémenter le filtrage des données par type d'activité
+   - Optimiser les requêtes de données pour éviter les recalculs inutiles
+
+3. **Tests et validation**
+   - Développer des tests unitaires pour valider les calculs
+   - Vérifier avec des jeux de données réels pour tous les scénarios possibles
+   - Documenter les cas limites et leur traitement
+
+### Phase 2: Optimisation des informations affichées (Juin 2025)
+1. **Vue journalière**
+   - Revoir la pertinence des informations affichées dans le résumé
+   - Améliorer l'affichage chronologique des activités
+   - Ajouter des fonctionnalités d'édition rapide des activités (raccourci vers EditScreen)
+
+2. **Vue hebdomadaire**
+   - Optimiser le tableau récapitulatif par jour
+   - Ajouter un graphique visuel de répartition du temps
+   - Implémenter un système de filtre pour masquer/afficher les jours sans activité
+
+3. **Vue mensuelle**
+   - Implémenter un calendrier visuel avec code couleur d'intensité
+   - Optimiser l'affichage des semaines pour avoir une vue synthétique efficace
+   - Ajouter des fonctionnalités de navigation vers une semaine/journée spécifique
+
+### Phase 3: Amélioration de l'expérience utilisateur (Juillet 2025)
+1. **Navigation inter-écrans**
+   - Permettre de naviguer facilement entre les niveaux (mois → semaine → jour)
+   - Ajouter des animations de transition entre les écrans
+   - Implémenter des gestes tactiles pour faciliter la navigation
+
+2. **Design et esthétique**
+   - Harmoniser les styles avec le reste de l'application
+   - Optimiser les espacements pour une meilleure lisibilité
+   - Améliorer les contrastes et la hiérarchie visuelle des informations
+
+3. **Fonctionnalités avancées**
+   - Ajouter des fonctionnalités d'export des données statistiques (CSV, PDF)
+   - Implémenter des options de personnalisation de l'affichage
+   - Développer des visualisations avancées (graphiques, tendances)
+
+### Documentation associée
+- Mise à jour continue du document `StatisticsRules.md` avec les règles métier précises
+- Création d'un document `StatisticsImplementation.md` pour détailler les algorithmes
+- Enrichissement de la documentation utilisateur avec des tutoriels d'utilisation des écrans statistiques
+
+Cette planification permettra de développer les écrans statistiques de manière méthodique, en privilégiant d'abord la précision des calculs avant de travailler sur l'esthétique et les fonctionnalités avancées.
 
 ## Journal des modifications
 
 ### 2025-04-27
+- Migration complète des écrans de statistiques vers une architecture modulaire:
+  - Séparation des onglets Jour/Semaine/Mois dans des fichiers distincts
+  - Création d'un fichier de composants communs réutilisables
+  - Amélioration de la maintenance et lisibilité du code
 - Nettoyage du code : suppression de DateTimePickerDialog.kt devenu obsolète
 - Élimination des importations inutilisées dans EditScreen.kt
 - Documentation mise à jour pour refléter l'achèvement des fonctionnalités UI
@@ -136,7 +208,43 @@ Architecture flexible pour permettre le calcul des statistiques avec des règles
 - Documentation mise à jour pour refléter l'approche de stockage
 - Correction du bug "value missed" lié aux paramètres nullables dans les requêtes Room
 
-# Suivi de progression du projet AATT
+## 27 avril 2025 - Restructuration modulaire de l'écran de statistiques
+
+### Problème résolu
+- Structure monolithique de l'écran de statistiques rendant la maintenance difficile
+- Duplication de code entre les différents onglets (jour/semaine/mois)
+- Fichier StatsScreen.kt trop volumineux et difficile à maintenir
+
+### Améliorations apportées
+1. **Architecture modulaire des écrans de statistiques**
+   - Séparation en fichiers dédiés pour chaque mode d'affichage:
+     - `DailyStatsScreen.kt`: Affichage des statistiques journalières
+     - `WeeklyStatsScreen.kt`: Affichage des statistiques hebdomadaires
+     - `MonthlyStatsScreen.kt`: Affichage des statistiques mensuelles
+     - `StatsCommonComponents.kt`: Composants partagés entre les différents écrans
+   - Fichier principal `StatsScreen.kt` restructuré pour utiliser les composants séparés
+   
+2. **Avantages de la nouvelle architecture**
+   - Meilleure séparation des préoccupations
+   - Code plus facile à maintenir et faire évoluer
+   - Réduction de la duplication de code
+   - Meilleure organisation du projet
+   
+3. **Mise à jour technique**
+   - Remplacement de `Divider` par `HorizontalDivider` (nouvelle API Material3)
+   - Correction des problèmes de typage avec les triplets
+   - Amélioration de la gestion des imports d'icônes
+
+### Impact sur la maintenabilité
+- Structure plus claire facilitant les évolutions futures
+- Isolation des bugs potentiels dans des fichiers dédiés
+- Modifications plus simples et moins risquées
+- Réutilisation améliorée des composants communs
+
+### Améliorations techniques
+- Ajout explicite des types pour éviter les ambiguïtés
+- Correction des références aux composants obsolètes
+- Optimisation des imports
 
 ## 27 avril 2025 - Optimisation de l'affichage des activités et amélioration de l'ergonomie
 
