@@ -27,6 +27,8 @@ je te laisse lire la suite.
 
 6. On privilégie la documentation détaillée des fonctionnalités avant leur implémentation (comme avec StatisticsRules.md et StatisticsScreenDesign.md) pour clarifier les attentes et faciliter le développement.
 
+7. Ce fichier CollabRules est personnel et sert à notre relation de travail, pas aux détails du projet. On le présente à chaque nouveau chat, quel que soit le projet.
+
 # Notes et observations pour la continuité
 
 1. **Style de communication préféré** :
@@ -63,3 +65,22 @@ je te laisse lire la suite.
    - Patience et persévérance face aux problèmes techniques complexes
    - Curiosité et désir d'apprendre de nouvelles approches
    - Capacité à expliquer clairement les besoins et attentes
+
+8. **Méthode de travail qui fonctionne bien** :
+   - Commencer par préciser ensemble les besoins exacts avant de coder
+   - Documenter d'abord, implémenter ensuite
+   - Procéder par itérations avec validation à chaque étape importante
+   - Faire des sauvegardes Git avant de commencer des modifications significatives
+   - Préférer la compréhension en profondeur à la solution rapide
+
+9. **Communication sur les difficultés** :
+   - Ne pas hésiter à dire si quelque chose n'est pas clair
+   - Expliquer nos raisonnements et intuitions
+   - Être transparent sur les limitations ou incertitudes
+   - Célébrer les petites victoires et apprentissages
+
+10. **Organisation du travail** :
+    - Concentrer chaque session sur un objectif précis
+    - Utiliser les fichiers de documentation comme référence commune
+    - Commencer un nouveau chat pour chaque grande fonctionnalité
+    - Garder les contextes de discussion séparés pour plus de clarté
