@@ -189,17 +189,15 @@ Cette présentation visuelle détaillée permet à l'utilisateur de voir rapidem
 ┌─────────────────────────────────────────┐
 │ RÉSUMÉ DE LA SEMAINE                    │
 │                                         │
-│ Total travail: 37:30                    │
-│  • VS: 15:30                            │
-│  • DOMICILE: 13:00                      │
-│  • DEPLACEMENT: 08:00                   │
+│ Total à déclarer: 24:30                 │
+│  • VS+DÉPL: 23:30                       │
 │  • ROUTE comptée (>1h30/jour): 01:00    │
+│                                         │
+│ Domicile (information): 13:00           │
 │                                         │
 │ Total route brut: 07:00                 │
 │ Déduction route: -06:00 (4 jours x 1h30)│
-│ Route comptabilisée: 01:00              │
 │                                         │
-│ Total pauses: 01:00                     │
 │ Jours travaillés: 4/7                   │
 │                                         │
 └─────────────────────────────────────────┘
@@ -207,43 +205,135 @@ Cette présentation visuelle détaillée permet à l'utilisateur de voir rapidem
 ┌─────────────────────────────────────────┐
 │ DÉTAIL PAR JOUR                         │
 │                                         │
-│ Lu 21 │ VS: 04:00   │ Route: 02:00      │
-│       │ DOM: 02:00  │ Route comptée: 00:30 │
-│       │ DEPL: 02:00 │ Pause: 00:00      │
-│       │ Total travail: 08:30            │
-│───────┼────────────┼────────────────────┤
-│ Ma 22 │ VS: 03:30   │ Route: 03:00      │
-│       │ DOM: 01:30  │ Route comptée: 01:30 │
-│       │ DEPL: 02:00 │ Pause: 01:00      │
-│       │ Total travail: 08:30            │
-│───────┼────────────┼────────────────────┤
-│ Me 23 │      --- Aucune activité ---    │
-│───────┼────────────┼────────────────────┤
-│ Je 24 │ VS: 03:00   │ Route: 01:00      │
-│       │ DOM: 03:00  │ Route comptée: 00:00 │
-│       │ DEPL: 00:00 │ Pause: 00:00      │
-│       │ Total travail: 06:00            │
-│───────┼────────────┼────────────────────┤
-│ Ve 25 │ VS: 05:00   │ Route: 01:00      │
-│       │ DOM: 02:00  │ Route comptée: 00:00 │
-│       │ DEPL: 00:00 │ Pause: 00:00      │
-│       │ Total travail: 07:00            │
-│───────┼────────────┼────────────────────┤
-│ Sa 26 │      --- Aucune activité ---    │
-│───────┼────────────┼────────────────────┤
-│ Di 27 │      --- Aucune activité ---    │
-│───────┼────────────┼────────────────────┤
-│ TOTAL │ VS: 15:30   │ Route: 07:00      │
-│       │ DOM: 08:30  │ Route comptée: 01:00 │
-│       │ DEPL: 04:00 │ Pause: 01:00      │
-│       │ Total travail: 29:00            │
+│ Lundi 21/04/2025                        │
+│ ┌───────────────────────────────────────┐
+│ │ ROUTE     | Durée: 01:00 | Déduct: -01:00 │
+│ │ VS #1     | Durée: 01:30 | + DÉPL: 00:30  │
+│ │ VS #2     | Durée: 02:00 |               │
+│ │ ROUTE     | Durée: 01:00 | Déduct: -00:30 │
+│ │           |              |               │
+│ │ Total à déclarer: 03:30                 │
+│ │ Domicile (info): 03:00                  │
+│ └───────────────────────────────────────┘
+│                                         │
+│ Mardi 22/04/2025                        │
+│ ┌───────────────────────────────────────┐
+│ │ ROUTE     | Durée: 01:30 | Déduct: -01:30 │
+│ │ VS #1     | Durée: 03:00 |               │
+│ │ VS #2     | Durée: 02:30 | + DÉPL: 00:30  │
+│ │ ROUTE     | Durée: 01:30 | Déduct: 00:00  │
+│ │           |              |               │
+│ │ Total à déclarer: 06:00                 │
+│ │ Domicile (info): 00:00                  │
+│ └───────────────────────────────────────┘
+│                                         │
+│ // Autres jours...                      │
 └─────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────┐
-│           [Graphique à barres]          │
-│       répartition par jour travaillé    │
+│ DÉCLARATION SYNTHÉTIQUE                 │
+│                                         │
+│ ┌───────────────────────────────────────┐
+│ │ Jour      │ À déclarer │    Domicile  │
+│ │           │ (VS+DÉPL+ROUTE) │ (info)  │
+│ │───────────┼────────────┼─────────────│
+│ │ Lun 21/04 │    03:30   │    03:00    │
+│ │ Mar 22/04 │    06:00   │    00:00    │
+│ │ Mer 23/04 │    00:00   │    00:00    │
+│ │ Jeu 24/04 │    06:30   │    01:00    │
+│ │ Ven 25/04 │    07:00   │    01:00    │
+│ │ Sam 26/04 │    00:00   │    00:00    │
+│ │ Dim 27/04 │    01:30   │    08:00    │
+│ │───────────┼────────────┼─────────────│
+│ │ TOTAL     │    24:30   │    13:00    │
+│ └───────────────────────────────────────┘
+│                                         │
 └─────────────────────────────────────────┘
 ```
+
+### Informations affichées
+
+1. **En-tête** : Navigation identique aux autres modes
+
+2. **Résumé de la semaine** : Card avec les totaux principaux
+   - Temps total à déclarer
+   - Les temps VS et DÉPLACEMENT sont regroupés pour simplifier la déclaration
+   - Détail du calcul de la route (brut, déduction, comptabilisé)
+   - Nombre de jours travaillés dans la semaine
+
+3. **Détail par jour** : Présentation simplifiée
+   - Affichage des activités ROUTE et VS uniquement
+   - Les temps de DÉPLACEMENT sont intégrés aux VS correspondantes
+   - Calcul du total à déclarer pour chaque jour
+   - Total hebdomadaire ventilé par type d'activité regroupé
+   - Mise en évidence du montant total à déclarer
+
+4. **Déclaration synthétique** : Section spécialement conçue pour les déclarations administratives
+   - Présentation condensée en format tableau
+   - Total journalier à déclarer
+   - Ventilation entre VS+DÉPLACEMENT combinés
+   - Information sur la route brute pour référence
+   - Option pour basculer entre le mode standard et le mode déclaration
+
+5. **Visualisation** : Représentation graphique optionnelle
+   - Graphique à barres montrant la répartition du temps par jour
+   - Couleurs distinctes pour les différents types d'activités regroupés
+
+### Règles d'affichage spécifiques
+
+1. **Nombre limité de VS par jour**
+   - L'affichage est optimisé pour un maximum de 3 VS par jour (jamais plus dans l'usage réel)
+   - Les VS sont numérotées chronologiquement (VS #1, VS #2, VS #3)
+   
+2. **Simplification des informations temporelles**
+   - Seules les durées sont affichées, pas les heures de début et de fin précises
+   - Format simplifié : "Durée: HH:MM" pour toutes les activités
+   - Pour les activités ROUTE, ajout de "Déduct: -HH:MM" pour indiquer la déduction appliquée
+   
+3. **Intégration des DÉPLACEMENTS**
+   - Les temps de DÉPLACEMENT sont affichés comme des ajouts aux VS correspondantes
+   - Règle d'attribution : le temps de déplacement est attribué à la VS suivante
+   - Affichage : "VS #n | Durée: HH:MM | + DÉPL: HH:MM"
+
+### Règles de regroupement des activités
+
+Pour simplifier la déclaration administrative, les activités sont regroupées selon les règles suivantes :
+
+1. **Affichage chronologique naturel** :
+   - Les activités sont présentées dans leur ordre chronologique naturel d'occurrence
+   - Aucun tri artificiel n'est nécessaire car la séquence typique ROUTE → VS → DÉPLACEMENT → VS → ... → ROUTE est naturelle
+
+2. **Les ROUTE** : 
+   - Apparaissent naturellement en début et fin de journée
+   - Soumises à la règle de déduction de 1h30 par jour
+   - Le temps au-delà de 1h30 par jour est comptabilisé comme du travail
+
+3. **Les VS et DÉPLACEMENTS** :
+   - Les temps de DÉPLACEMENT sont intégrés aux VS qui les suivent
+   - Règle d'attribution : le temps de déplacement est attribué à la VS suivante
+   - Affichage : "VS #n + DÉPL" pour indiquer l'inclusion du temps de déplacement
+
+4. **Les DOMICILE** :
+   - Affichées séparément pour une meilleure visibilité
+   - Comptabilisées comme du temps de travail
+
+5. **Les PAUSES** :
+   - Affichées pour information mais non comptées dans le total à déclarer
+
+### Fonctionnalités d'interaction
+
+1. **Options de visualisation**
+   - Basculement entre le mode détaillé et le mode déclaration
+   - Possibilité de masquer les jours sans activité pour une vue plus compacte
+   - Option pour voir les DÉPLACEMENTS séparément ou intégrés aux VS
+
+2. **Navigation**
+   - Tap sur un jour pour accéder à la vue journalière correspondante
+   - Liens rapides vers les jours avec activités
+
+3. **Aide à la déclaration**
+   - Bouton "Copier le résumé de déclaration" pour faciliter le transfert des informations
+   - Option pour générer un PDF synthétique des informations à déclarer
 
 ## Mode Mensuel
 
