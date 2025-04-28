@@ -40,11 +40,32 @@ fun PeriodNavigationHeader(
     val periodText = when (selectedTabIndex) {
         0 -> viewModel.dayFormatter.format(selectedDate.time)
         1 -> {
-            val endOfWeek = Calendar.getInstance().apply { 
+            // Pour l'onglet semaine, on s'assure que la semaine commence le lundi
+            val startOfWeek = Calendar.getInstance().apply { 
                 timeInMillis = selectedDate.timeInMillis
-                add(Calendar.DAY_OF_MONTH, 6)
+                // Ajustement pour que la semaine commence toujours le lundi
+                val dayOfWeek = get(Calendar.DAY_OF_WEEK)
+                // En Calendar, SUNDAY=1, MONDAY=2, ..., SATURDAY=7
+                // On calcule combien de jours on doit reculer pour arriver à lundi
+                val daysToSubtract = when (dayOfWeek) {
+                    Calendar.SUNDAY -> 6 // Dimanche → reculer de 6 jours pour aller au lundi précédent
+                    else -> dayOfWeek - Calendar.MONDAY // Pour les autres jours, calculer la différence avec lundi
+                }
+                add(Calendar.DAY_OF_MONTH, -daysToSubtract)
             }
-            "Du ${viewModel.shortDayFormatter.format(selectedDate.time)} au ${viewModel.shortDayFormatter.format(endOfWeek.time)}"
+            
+            val endOfWeek = Calendar.getInstance().apply { 
+                timeInMillis = startOfWeek.timeInMillis
+                add(Calendar.DAY_OF_MONTH, 6) // +6 jours pour aller du lundi au dimanche
+            }
+            
+            // Format avec des zéros devant les chiffres < 10
+            val startDay = startOfWeek.get(Calendar.DAY_OF_MONTH).toString().padStart(2, '0')
+            val startMonth = (startOfWeek.get(Calendar.MONTH) + 1).toString().padStart(2, '0')
+            val endDay = endOfWeek.get(Calendar.DAY_OF_MONTH).toString().padStart(2, '0')
+            val endMonth = (endOfWeek.get(Calendar.MONTH) + 1).toString().padStart(2, '0')
+            
+            "Du $startDay/$startMonth au $endDay/$endMonth"
         }
         2 -> viewModel.monthFormatter.format(selectedDate.time)
         else -> ""
@@ -80,13 +101,23 @@ fun PeriodNavigationHeader(
                 )
             }
             
-            // Texte de la période
-            Text(
-                text = periodText,
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center,
+            // Texte de la période (rendu cliquable)
+            TextButton(
+                onClick = {
+                    when (selectedTabIndex) {
+                        0 -> viewModel.navigateToToday()
+                        1 -> viewModel.navigateToCurrentWeek()
+                        2 -> viewModel.navigateToCurrentMonth()
+                    }
+                },
                 modifier = Modifier.weight(1f)
-            )
+            ) {
+                Text(
+                    text = periodText,
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center
+                )
+            }
             
             // Bouton "Suivant"
             IconButton(
@@ -102,35 +133,6 @@ fun PeriodNavigationHeader(
                     imageVector = Icons.Default.ArrowRight,
                     contentDescription = "Période suivante"
                 )
-            }
-            
-            // Bouton "Aujourd'hui"
-            Button(
-                onClick = {
-                    when (selectedTabIndex) {
-                        0 -> viewModel.navigateToToday()
-                        1 -> viewModel.navigateToCurrentWeek()
-                        2 -> viewModel.navigateToCurrentMonth()
-                    }
-                },
-                shape = RoundedCornerShape(4.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                ),
-                modifier = Modifier.padding(start = 8.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Today,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Aujourd'hui")
-                }
             }
         }
     }
