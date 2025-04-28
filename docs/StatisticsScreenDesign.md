@@ -21,23 +21,23 @@ Cette séparation permet une meilleure organisation du code, une séparation cla
 
 ### Navigation et sélection de période
 
-Pour assurer une expérience utilisateur cohérente, les trois modes de statistiques (jour, semaine, mois) utiliseront un en-tête de navigation identique :
+Pour assurer une expérience utilisateur cohérente, les trois modes de statistiques (jour, semaine, mois) utilisent un en-tête de navigation identique :
 
 ```
-┌─────────────────────────────────────────┐
-│  ◀  |  Période active  |  ▶  |  Aujourdhui  │
-└─────────────────────────────────────────┘
+┌─────────────────────────────┐
+│  ◀  |  Période active  |  ▶  │
+└─────────────────────────────┘
 ```
 
 - Le bouton `◀` permet de naviguer vers la période précédente
 - Le bouton `▶` permet de naviguer vers la période suivante
-- Le bouton `Aujourd'hui` permet de revenir à la période courante
-- Le texte `Période active` affiche la période sélectionnée au format approprié :
+- Le texte `Période active` est cliquable et permet de revenir à la période courante (jour actuel, semaine actuelle, mois actuel)
+- Le format d'affichage de la période sélectionnée est adapté à chaque mode :
   - Jour : "Mercredi 27/04/2025"
-  - Semaine : "Du 21/04 au 27/04/2025"
+  - Semaine : "Du 01/05 au 07/05" (du lundi au dimanche avec zéros pour les chiffres < 10)
   - Mois : "Avril 2025"
 
-Cette cohérence d'interface permettra à l'utilisateur de naviguer facilement entre les périodes, quel que soit le mode de statistiques.
+Cette conception épurée permet une navigation intuitive entre les périodes et maximise l'espace pour l'affichage des données statistiques.
 
 ### Éléments communs
 
