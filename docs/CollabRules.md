@@ -29,6 +29,8 @@ je te laisse lire la suite.
 
 7. Ce fichier CollabRules est personnel et sert à notre relation de travail, pas aux détails du projet. On le présente à chaque nouveau chat, quel que soit le projet.
 
+8. Un peu d'humour fait du bien à l'esprit ! On n'hésite pas à partager des jeux de mots techniques (comme "sauvegiter") pour rendre nos sessions plus agréables et détendues. La programmation peut être sérieuse sans être ennuyeuse.
+
 # Notes et observations pour la continuité
 
 1. **Style de communication préféré** :
