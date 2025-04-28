@@ -27,211 +27,104 @@ fun MonthlyStatsContent(viewModel: StatsViewModel) {
     val monthlyActivitiesByWeek by viewModel.monthlyActivitiesByWeek.collectAsState()
     val selectedDate by viewModel.selectedDate.collectAsState()
     
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = if (monthlyActivitiesByWeek.isEmpty()) Arrangement.Center else Arrangement.Top
-    ) {
-        if (monthlyActivitiesByWeek.isEmpty()) {
-            // Aucune activité pour ce mois
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Aucune activité pour ce mois",
-                    style = MaterialTheme.typography.titleLarge,
-                    textAlign = TextAlign.Center
-                )
+    if (monthlyActivitiesByWeek.isEmpty()) {
+        // Aucune activité pour ce mois
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Aucune activité pour ce mois",
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        // Utiliser une seule LazyColumn pour tout le contenu
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 16.dp)
+        ) {
+            // Espacement supérieur
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
             }
-        } else {
-            Spacer(modifier = Modifier.height(8.dp))
             
             // Card de résumé mensuel
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Column(
+            item {
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "RÉSUMÉ DU MOIS",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        .padding(horizontal = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    monthlyStats?.let { stats ->
-                        // Résumé du temps de travail
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
                         Text(
-                            text = "Total travail: ${StatisticsCalculator.formatDuration(stats.workDuration)}",
-                            style = MaterialTheme.typography.bodyLarge,
+                            text = "RÉSUMÉ DU MOIS",
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         
-                        // Détail par type d'activité
-                        val vsDuration = monthlyActivitiesByWeek.values.flatten()
-                            .filter { it.type == ActivityType.VS }
-                            .sumOf { StatisticsCalculator.calculateActivityDuration(it) }
-                        
-                        val domicileDuration = monthlyActivitiesByWeek.values.flatten()
-                            .filter { it.type == ActivityType.DOMICILE }
-                            .sumOf { StatisticsCalculator.calculateActivityDuration(it) }
-                        
-                        val deplacementDuration = stats.deplacementDuration
-                        
-                        val routeExcessDuration = stats.routeDurationAdjusted
-                        
-                        // Affichage des détails avec indentation
-                        Text(
-                            text = " • VS: ${StatisticsCalculator.formatDuration(vsDuration)}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        
-                        Text(
-                            text = " • DOMICILE: ${StatisticsCalculator.formatDuration(domicileDuration)}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        
-                        Text(
-                            text = " • DEPLACEMENT: ${StatisticsCalculator.formatDuration(deplacementDuration)}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        
-                        Text(
-                            text = " • ROUTE comptée (>1h30/jour): ${StatisticsCalculator.formatDuration(routeExcessDuration)}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        
                         Spacer(modifier = Modifier.height(8.dp))
                         
-                        // Informations sur la route
-                        Text(
-                            text = "Total route brut: ${StatisticsCalculator.formatDuration(stats.routeDuration)}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        
-                        val routeDeduction = stats.routeDuration - stats.routeDurationAdjusted
-                        val daysWithRoute = monthlyActivitiesByWeek.values.flatten()
-                            .groupBy { activity ->
-                                val cal = Calendar.getInstance()
-                                cal.timeInMillis = activity.startTime
-                                "${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH)}-${cal.get(Calendar.DAY_OF_MONTH)}"
-                            }
-                            .count { (_, activities) ->
-                                activities.any { it.type == ActivityType.ROUTE }
-                            }
-                        
-                        Text(
-                            text = "Déduction route: -${StatisticsCalculator.formatDuration(routeDeduction)} ($daysWithRoute jours x 1h30)",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        
-                        Text(
-                            text = "Route comptabilisée: ${StatisticsCalculator.formatDuration(stats.routeDurationAdjusted)}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        // Informations additionnelles
-                        Text(
-                            text = "Total pauses: ${StatisticsCalculator.formatDuration(stats.pauseDuration)}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        
-                        // Obtention du nombre de jours dans le mois
-                        val cal = selectedDate.clone() as Calendar
-                        val month = cal.get(Calendar.MONTH)
-                        val year = cal.get(Calendar.YEAR)
-                        
-                        val daysInMonth = when (month) {
-                            Calendar.JANUARY, Calendar.MARCH, Calendar.MAY, Calendar.JULY, 
-                            Calendar.AUGUST, Calendar.OCTOBER, Calendar.DECEMBER -> 31
-                            Calendar.APRIL, Calendar.JUNE, Calendar.SEPTEMBER, Calendar.NOVEMBER -> 30
-                            Calendar.FEBRUARY -> if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) 29 else 28
-                            else -> 30 // Par défaut
-                        }
-                        
-                        Text(
-                            text = "Jours travaillés: ${stats.workDays}/$daysInMonth",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Titre de la section détaillée par semaine
-            Text(
-                text = "DÉTAIL PAR SEMAINE",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-            
-            // Liste des semaines
-            LazyColumn {
-                items(monthlyActivitiesByWeek.entries.sortedBy { it.key.timeInMillis }) { (weekStartDate, weekActivities) ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp)
-                        ) {
-                            // En-tête de la semaine
-                            val startDay = weekStartDate.get(Calendar.DAY_OF_MONTH)
-                            val startMonth = weekStartDate.get(Calendar.MONTH) + 1
-                            
-                            val endDateCal = Calendar.getInstance()
-                            endDateCal.time = weekStartDate.time
-                            endDateCal.add(Calendar.DAY_OF_YEAR, 6)
-                            
-                            val endDay = endDateCal.get(Calendar.DAY_OF_MONTH)
-                            val endMonth = endDateCal.get(Calendar.MONTH) + 1
-                            
-                            val weekLabel = if (startMonth == endMonth) {
-                                "Semaine du $startDay au $endDay/$endMonth"
-                            } else {
-                                "Semaine du $startDay/$startMonth au $endDay/$endMonth"
-                            }
-                            
+                        monthlyStats?.let { stats ->
+                            // Résumé du temps de travail
                             Text(
-                                text = weekLabel,
-                                style = MaterialTheme.typography.titleSmall,
+                                text = "Total travail: ${StatisticsCalculator.formatDuration(stats.workDuration)}",
+                                style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.Bold
                             )
                             
-                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                            
-                            // Statistiques des activités de la semaine
-                            val vsDuration = weekActivities.filter { it.type == ActivityType.VS }
+                            // Détail par type d'activité
+                            val vsDuration = monthlyActivitiesByWeek.values.flatten()
+                                .filter { it.type == ActivityType.VS }
                                 .sumOf { StatisticsCalculator.calculateActivityDuration(it) }
                             
-                            val domicileDuration = weekActivities.filter { it.type == ActivityType.DOMICILE }
+                            val domicileDuration = monthlyActivitiesByWeek.values.flatten()
+                                .filter { it.type == ActivityType.DOMICILE }
                                 .sumOf { StatisticsCalculator.calculateActivityDuration(it) }
                             
-                            val deplacementDuration = weekActivities.filter { it.type == ActivityType.DEPLACEMENT }
-                                .sumOf { StatisticsCalculator.calculateActivityDuration(it) }
+                            val deplacementDuration = stats.deplacementDuration
                             
-                            val routeDuration = weekActivities.filter { it.type == ActivityType.ROUTE }
-                                .sumOf { StatisticsCalculator.calculateActivityDuration(it) }
+                            val routeExcessDuration = stats.routeDurationAdjusted
                             
-                            // Calcul des jours avec route dans la semaine
-                            val daysWithRoute = weekActivities
+                            // Affichage des détails avec indentation
+                            Text(
+                                text = " • VS: ${StatisticsCalculator.formatDuration(vsDuration)}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            
+                            Text(
+                                text = " • DOMICILE: ${StatisticsCalculator.formatDuration(domicileDuration)}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            
+                            Text(
+                                text = " • DEPLACEMENT: ${StatisticsCalculator.formatDuration(deplacementDuration)}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            
+                            Text(
+                                text = " • ROUTE comptée (>1h30/jour): ${StatisticsCalculator.formatDuration(routeExcessDuration)}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            // Informations sur la route
+                            Text(
+                                text = "Total route brut: ${StatisticsCalculator.formatDuration(stats.routeDuration)}",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            
+                            val routeDeduction = stats.routeDuration - stats.routeDurationAdjusted
+                            val daysWithRoute = monthlyActivitiesByWeek.values.flatten()
                                 .groupBy { activity ->
                                     val cal = Calendar.getInstance()
                                     cal.timeInMillis = activity.startTime
@@ -241,123 +134,238 @@ fun MonthlyStatsContent(viewModel: StatsViewModel) {
                                     activities.any { it.type == ActivityType.ROUTE }
                                 }
                             
-                            // Calcul de la déduction route (1h30 par jour avec route)
-                            val routeDeduction = minOf(routeDuration, daysWithRoute * 5400000L) // 1h30 = 5400000ms
-                            val routeAdjusted = maxOf(0, routeDuration - routeDeduction)
+                            Text(
+                                text = "Déduction route: -${StatisticsCalculator.formatDuration(routeDeduction)} ($daysWithRoute jours x 1h30)",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                             
-                            // Calcul du temps de travail total
-                            val totalWorkTime = vsDuration + domicileDuration + deplacementDuration + routeAdjusted
+                            Text(
+                                text = "Route comptabilisée: ${StatisticsCalculator.formatDuration(stats.routeDurationAdjusted)}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                             
-                            // Calcul des jours travaillés
-                            val workDays = weekActivities
-                                .groupBy { activity ->
-                                    val cal = Calendar.getInstance()
-                                    cal.timeInMillis = activity.startTime
-                                    "${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH)}-${cal.get(Calendar.DAY_OF_MONTH)}"
-                                }
-                                .count()
+                            Spacer(modifier = Modifier.height(8.dp))
                             
-                            // Affichage des statistiques
+                            // Informations additionnelles
+                            Text(
+                                text = "Total pauses: ${StatisticsCalculator.formatDuration(stats.pauseDuration)}",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
                             
-                            // Total travail
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "Total travail:",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                                
-                                Text(
-                                    text = StatisticsCalculator.formatDuration(totalWorkTime),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
+                            // Obtention du nombre de jours dans le mois
+                            val cal = selectedDate.clone() as Calendar
+                            val month = cal.get(Calendar.MONTH)
+                            val year = cal.get(Calendar.YEAR)
+                            
+                            val daysInMonth = when (month) {
+                                Calendar.JANUARY, Calendar.MARCH, Calendar.MAY, Calendar.JULY, 
+                                Calendar.AUGUST, Calendar.OCTOBER, Calendar.DECEMBER -> 31
+                                Calendar.APRIL, Calendar.JUNE, Calendar.SEPTEMBER, Calendar.NOVEMBER -> 30
+                                Calendar.FEBRUARY -> if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) 29 else 28
+                                else -> 30 // Par défaut
                             }
                             
-                            // VS
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "VS:",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                                
-                                Text(
-                                    text = StatisticsCalculator.formatDuration(vsDuration),
-                                    style = MaterialTheme.typography.bodySmall
-                                )
+                            Text(
+                                text = "Jours travaillés: ${stats.workDays}/$daysInMonth",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+            
+            // Titre de la section détaillée par semaine
+            item {
+                Text(
+                    text = "DÉTAIL PAR SEMAINE",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
+            
+            // Liste des semaines (une par une)
+            items(monthlyActivitiesByWeek.entries.sortedBy { it.key.timeInMillis }) { (weekStartDate, weekActivities) ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    ) {
+                        // En-tête de la semaine
+                        val startDay = weekStartDate.get(Calendar.DAY_OF_MONTH)
+                        val startMonth = weekStartDate.get(Calendar.MONTH) + 1
+                        
+                        val endDateCal = Calendar.getInstance()
+                        endDateCal.time = weekStartDate.time
+                        endDateCal.add(Calendar.DAY_OF_YEAR, 6)
+                        
+                        val endDay = endDateCal.get(Calendar.DAY_OF_MONTH)
+                        val endMonth = endDateCal.get(Calendar.MONTH) + 1
+                        
+                        val weekLabel = if (startMonth == endMonth) {
+                            "Semaine du $startDay au $endDay/$endMonth"
+                        } else {
+                            "Semaine du $startDay/$startMonth au $endDay/$endMonth"
+                        }
+                        
+                        Text(
+                            text = weekLabel,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                        
+                        // Statistiques des activités de la semaine
+                        val vsDuration = weekActivities.filter { it.type == ActivityType.VS }
+                            .sumOf { StatisticsCalculator.calculateActivityDuration(it) }
+                        
+                        val domicileDuration = weekActivities.filter { it.type == ActivityType.DOMICILE }
+                            .sumOf { StatisticsCalculator.calculateActivityDuration(it) }
+                        
+                        val deplacementDuration = weekActivities.filter { it.type == ActivityType.DEPLACEMENT }
+                            .sumOf { StatisticsCalculator.calculateActivityDuration(it) }
+                        
+                        val routeDuration = weekActivities.filter { it.type == ActivityType.ROUTE }
+                            .sumOf { StatisticsCalculator.calculateActivityDuration(it) }
+                        
+                        // Calcul des jours avec route dans la semaine
+                        val daysWithRoute = weekActivities
+                            .groupBy { activity ->
+                                val cal = Calendar.getInstance()
+                                cal.timeInMillis = activity.startTime
+                                "${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH)}-${cal.get(Calendar.DAY_OF_MONTH)}"
                             }
-                            
-                            // Domicile
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "Domicile:",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                                
-                                Text(
-                                    text = StatisticsCalculator.formatDuration(domicileDuration),
-                                    style = MaterialTheme.typography.bodySmall
-                                )
+                            .count { (_, activities) ->
+                                activities.any { it.type == ActivityType.ROUTE }
                             }
-                            
-                            // Déplacement
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "Déplacement:",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                                
-                                Text(
-                                    text = StatisticsCalculator.formatDuration(deplacementDuration),
-                                    style = MaterialTheme.typography.bodySmall
-                                )
+                        
+                        // Calcul de la déduction route (1h30 par jour avec route)
+                        val routeDeduction = minOf(routeDuration, daysWithRoute * 5400000L) // 1h30 = 5400000ms
+                        val routeAdjusted = maxOf(0, routeDuration - routeDeduction)
+                        
+                        // Calcul du temps de travail total
+                        val totalWorkTime = vsDuration + domicileDuration + deplacementDuration + routeAdjusted
+                        
+                        // Calcul des jours travaillés
+                        val workDays = weekActivities
+                            .groupBy { activity ->
+                                val cal = Calendar.getInstance()
+                                cal.timeInMillis = activity.startTime
+                                "${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH)}-${cal.get(Calendar.DAY_OF_MONTH)}"
                             }
+                            .count()
+                        
+                        // Affichage des statistiques
+                        
+                        // Total travail
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Total travail:",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                             
-                            // Route comptée
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "Route comptée:",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                                
-                                Text(
-                                    text = StatisticsCalculator.formatDuration(routeAdjusted),
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
+                            Text(
+                                text = StatisticsCalculator.formatDuration(totalWorkTime),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        
+                        // VS
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "VS:",
+                                style = MaterialTheme.typography.bodySmall
+                            )
                             
-                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                            Text(
+                                text = StatisticsCalculator.formatDuration(vsDuration),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        
+                        // Domicile
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Domicile:",
+                                style = MaterialTheme.typography.bodySmall
+                            )
                             
-                            // Jours travaillés
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "Jours travaillés:",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                                
-                                Text(
-                                    text = "$workDays/7",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                            Text(
+                                text = StatisticsCalculator.formatDuration(domicileDuration),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        
+                        // Déplacement
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Déplacement:",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            
+                            Text(
+                                text = StatisticsCalculator.formatDuration(deplacementDuration),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        
+                        // Route comptée
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Route comptée:",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            
+                            Text(
+                                text = StatisticsCalculator.formatDuration(routeAdjusted),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                        
+                        // Jours travaillés
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Jours travaillés:",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            
+                            Text(
+                                text = "$workDays/7",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }

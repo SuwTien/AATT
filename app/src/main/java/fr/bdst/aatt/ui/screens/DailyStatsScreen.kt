@@ -24,91 +24,95 @@ fun DailyStatsContent(viewModel: StatsViewModel) {
     val dailyStats by viewModel.dailyStats.collectAsState()
     val dailyActivities by viewModel.dailyActivities.collectAsState()
     
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = if (dailyActivities.isEmpty()) Arrangement.Center else Arrangement.Top
-    ) {
-        if (dailyActivities.isEmpty()) {
-            // Aucune activité pour ce jour
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Aucune activité pour ce jour",
-                    style = MaterialTheme.typography.titleLarge,
-                    textAlign = TextAlign.Center
-                )
+    if (dailyActivities.isEmpty()) {
+        // Aucune activité pour ce jour
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Aucune activité pour ce jour",
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        // Utiliser une seule LazyColumn pour tout le contenu
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 16.dp)
+        ) {
+            // Élément pour l'espacement supérieur
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
             }
-        } else {
-            Spacer(modifier = Modifier.height(8.dp))
             
-            // Card de résumé
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Column(
+            // Élément pour la card de résumé
+            item {
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "RÉSUMÉ DU JOUR",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        .padding(horizontal = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    // Affichage des statistiques
-                    dailyStats?.let { stats ->
-                        Text(
-                            text = "Travail: ${StatisticsCalculator.formatDuration(stats.workDuration)}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        
-                        Text(
-                            text = "Route: ${StatisticsCalculator.formatDuration(stats.routeDurationAdjusted)} " +
-                                "(brut: ${StatisticsCalculator.formatDuration(stats.routeDuration)})",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        
-                        Text(
-                            text = "Pause: ${StatisticsCalculator.formatDuration(stats.pauseDuration)}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Titre des activités détaillées
-            Text(
-                text = "ACTIVITÉS DÉTAILLÉES",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-            
-            // Liste détaillée des activités
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                items(dailyActivities.sortedBy { it.startTime }) { activity ->
-                    ActivityDetailCard(
-                        activity = activity,
-                        timeFormatter = viewModel.timeFormatter,
+                ) {
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                    )
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = "RÉSUMÉ DU JOUR",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        // Affichage des statistiques
+                        dailyStats?.let { stats ->
+                            Text(
+                                text = "Travail: ${StatisticsCalculator.formatDuration(stats.workDuration)}",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            
+                            Text(
+                                text = "Route: ${StatisticsCalculator.formatDuration(stats.routeDurationAdjusted)} " +
+                                    "(brut: ${StatisticsCalculator.formatDuration(stats.routeDuration)})",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            
+                            Text(
+                                text = "Pause: ${StatisticsCalculator.formatDuration(stats.pauseDuration)}",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
                 }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+            
+            // Élément pour le titre des activités détaillées
+            item {
+                Text(
+                    text = "ACTIVITÉS DÉTAILLÉES",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
+            
+            // Éléments pour les activités détaillées
+            items(dailyActivities.sortedBy { it.startTime }) { activity ->
+                ActivityDetailCard(
+                    activity = activity,
+                    timeFormatter = viewModel.timeFormatter,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                )
             }
         }
     }
