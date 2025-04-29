@@ -9,7 +9,7 @@ FPR : Fast photo renamer, j'en suis vraiment très content je l'utilise tous les
 AVP, une 1ere version slutter de FPR, 
 Courses manager : Pas finie mais utilisable et pratique.
 
-J'ai programmé un peu il y a longtemps alors j'ai des notions et grace à toi, je peux programmer le applications dont j'ai besoin, comme j'en ai besoin.
+J'ai programmé un peu il y a longtemps alors j'ai des notions et grace à toi, je peux programmer les applications dont j'ai besoin, comme j'en ai besoin.
 Enfin, on peut programmer :) D'avance je te remercie, c'est incroyable pour moi ce que tu fais.
 je te laisse lire la suite.
 
@@ -30,6 +30,18 @@ je te laisse lire la suite.
 7. Ce fichier CollabRules est personnel et sert à notre relation de travail, pas aux détails du projet. On le présente à chaque nouveau chat, quel que soit le projet.
 
 8. Un peu d'humour fait du bien à l'esprit ! On n'hésite pas à partager des jeux de mots techniques (comme "sauvegiter") pour rendre nos sessions plus agréables et détendues. La programmation peut être sérieuse sans être ennuyeuse.
+
+9. **Gestion des modifications complexes** :
+   - Quand les modifications deviennent nombreuses ou complexes, signaler explicitement qu'on risque de perdre le fil
+   - Limiter les modifications par session à des changements cohérents et bien délimités
+   - Faire des commits git intermédiaires après chaque modification significative qui fonctionne
+   - Avant de faire de grands changements, vérifier que la version actuelle compile correctement
+   - Si on sent qu'on commence à s'embrouiller dans les modifications, proposer de revenir à la dernière version stable
+
+10. **Communication sur la complexité** :
+    - Signaler dès le début si une demande semble trop complexe pour être traitée en une seule fois
+    - Proposer de découper les tâches complexes en plusieurs étapes plus gérables
+    - Ne pas hésiter à dire "je commence à m'embrouiller avec toutes ces modifications" si c'est le cas
 
 # Notes et observations pour la continuité
 

@@ -168,12 +168,19 @@ Cette planification permettra de développer les écrans statistiques de manièr
 
 ### 2025-04-29
 - Amélioration de l'interface des statistiques hebdomadaires :
-  - Remplacement du titre "RÉSUMÉ DE LA SEMAINE" par "Semaine XX" bien centré
+  - Refonte du résumé hebdomadaire avec titre "Semaine XX" bien centré
   - Réorganisation complète des informations avec libellés à gauche et valeurs à droite
-  - Calcul et affichage de nouveaux totaux pertinents (VS + Déplacements + Route payée)
-  - Structure hiérarchique claire avec mise en évidence des totaux importants
-  - Ajout d'un grand total incluant la route non payée
-  - Meilleure organisation visuelle pour une consultation plus efficace
+  - Présentation claire des totaux avec mise en évidence des informations importantes
+  - Ajout d'une note explicative sur le comptage des déplacements
+  - Documentation des modifications dans le journal de progression
+
+### Prochaines étapes - Statistiques hebdomadaires
+- **Visuel des jours** (à implémenter dans un prochain chat) :
+  - Améliorer l'affichage de chaque jour dans le tableau détaillé
+  - Mettre en évidence les jours de la semaine avec un style plus visible
+  - Ajouter des indicateurs visuels pour faciliter la lecture des activités
+  - Possibilité d'ajouter une représentation graphique simple de la répartition du temps
+  - Optimiser l'espace pour afficher plus d'informations pertinentes
 
 ### 2025-04-27
 - Migration complète des écrans de statistiques vers une architecture modulaire:
