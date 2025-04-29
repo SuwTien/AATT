@@ -26,6 +26,7 @@ fun WeeklyStatsContent(viewModel: StatsViewModel) {
     // Collecte des états
     val weeklyStats by viewModel.weeklyStats.collectAsState()
     val weeklyActivitiesByDay by viewModel.weeklyActivitiesByDay.collectAsState()
+    val selectedDate by viewModel.selectedDate.collectAsState()
     
     if (weeklyActivitiesByDay.isEmpty()) {
         // Aucune activité pour cette semaine
@@ -63,24 +64,19 @@ fun WeeklyStatsContent(viewModel: StatsViewModel) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally // Centrer le contenu horizontalement
                     ) {
                         Text(
-                            text = "RÉSUMÉ DE LA SEMAINE",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            text = "Semaine ${selectedDate.get(Calendar.WEEK_OF_YEAR)}",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
                         )
                         
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         
                         weeklyStats?.let { stats ->
-                            // Résumé du temps de travail
-                            Text(
-                                text = "Total travail: ${StatisticsCalculator.formatDuration(stats.workDuration)}",
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                            
                             // Détail par type d'activité
                             val vsDuration = weeklyActivitiesByDay.values.flatten()
                                 .filter { it.type == ActivityType.VS }
@@ -94,62 +90,155 @@ fun WeeklyStatsContent(viewModel: StatsViewModel) {
                             
                             val routeExcessDuration = stats.routeDurationAdjusted
                             
-                            // Affichage des détails avec indentation
-                            Text(
-                                text = " • VS: ${StatisticsCalculator.formatDuration(vsDuration)}",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            
-                            Text(
-                                text = " • DOMICILE: ${StatisticsCalculator.formatDuration(domicileDuration)}",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            
-                            Text(
-                                text = " • DEPLACEMENT: ${StatisticsCalculator.formatDuration(deplacementDuration)}",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            
-                            Text(
-                                text = " • ROUTE comptée (>1h30/jour): ${StatisticsCalculator.formatDuration(routeExcessDuration)}",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            
-                            Spacer(modifier = Modifier.height(8.dp))
-                            
-                            // Informations sur la route
-                            Text(
-                                text = "Total route brut: ${StatisticsCalculator.formatDuration(stats.routeDuration)}",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            
                             val routeDeduction = stats.routeDuration - stats.routeDurationAdjusted
+                            
+                            // Calcul des totaux corrigés
+                            val vsPlusDeplacementPlusRouteDuration = vsDuration + deplacementDuration + routeExcessDuration
+                            val allWorkDuration = vsDuration + deplacementDuration + routeExcessDuration + domicileDuration
+                            val grandTotalDuration = allWorkDuration + routeDeduction // Grand total incluant la route < 1h30
+                            
                             val daysWithRoute = weeklyActivitiesByDay.values.count { dayActivities ->
                                 dayActivities.any { it.type == ActivityType.ROUTE }
                             }
                             
-                            Text(
-                                text = "Déduction route: -${StatisticsCalculator.formatDuration(routeDeduction)} ($daysWithRoute jours x 1h30)",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                            // Nouvelle organisation avec nom à gauche et temps à droite
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = "VS:", style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    text = StatisticsCalculator.formatDuration(vsDuration),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
                             
-                            Text(
-                                text = "Route comptabilisée: ${StatisticsCalculator.formatDuration(stats.routeDurationAdjusted)}",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = "Déplacements:", style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    text = StatisticsCalculator.formatDuration(deplacementDuration),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                            
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = "Route Payée:", style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    text = StatisticsCalculator.formatDuration(routeExcessDuration),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                            
+                            // Total VS + Déplacements en gras
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "Total:", 
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = StatisticsCalculator.formatDuration(vsPlusDeplacementPlusRouteDuration),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            
+                            Spacer(modifier = Modifier.height(4.dp))
+                            
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = "Tavail à domicile:", style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    text = StatisticsCalculator.formatDuration(domicileDuration),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                            
+                            // Total Route + Déplacements en gras
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "Total:", 
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = StatisticsCalculator.formatDuration(allWorkDuration),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                            
+                            
+                            
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = "Route < 1h30:", style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    text = StatisticsCalculator.formatDuration(routeDeduction),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                            
+                            // Total travail (tout inclus)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "TOTAL:", 
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+                                Text(
+                                    text = StatisticsCalculator.formatDuration(grandTotalDuration),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+                            }
                             
                             Spacer(modifier = Modifier.height(8.dp))
                             
-                            // Informations additionnelles
-                            Text(
-                                text = "Total pauses: ${StatisticsCalculator.formatDuration(stats.pauseDuration)}",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = "Pauses:", style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    text = StatisticsCalculator.formatDuration(stats.pauseDuration),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
                             
-                            Text(
-                                text = "Jours travaillés: ${stats.workDays}/7",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = "Jours travaillés:", style = MaterialTheme.typography.bodyLarge, )
+                                Text(
+                                    text = "${stats.workDays}/7",
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
                         }
                     }
                 }

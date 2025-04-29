@@ -166,6 +166,15 @@ Cette planification permettra de développer les écrans statistiques de manièr
 
 ## Journal des modifications
 
+### 2025-04-29
+- Amélioration de l'interface des statistiques hebdomadaires :
+  - Remplacement du titre "RÉSUMÉ DE LA SEMAINE" par "Semaine XX" bien centré
+  - Réorganisation complète des informations avec libellés à gauche et valeurs à droite
+  - Calcul et affichage de nouveaux totaux pertinents (VS + Déplacements + Route payée)
+  - Structure hiérarchique claire avec mise en évidence des totaux importants
+  - Ajout d'un grand total incluant la route non payée
+  - Meilleure organisation visuelle pour une consultation plus efficace
+
 ### 2025-04-27
 - Migration complète des écrans de statistiques vers une architecture modulaire:
   - Séparation des onglets Jour/Semaine/Mois dans des fichiers distincts
