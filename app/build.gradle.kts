@@ -19,13 +19,24 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Configuration pour la signature de l'application
+    signingConfigs {
+        create("release") {
+            storeFile = file("../aatt.keystore")
+            storePassword = "AAtt2142"
+            keyAlias = "aatt"
+            keyPassword = "AAtt2142"
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true // Activer la minification pour réduire la taille de l'APK
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release") // Utiliser la config de signature
         }
     }
     compileOptions {
