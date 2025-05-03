@@ -1,9 +1,13 @@
 package fr.bdst.aatt.ui.screens
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -17,21 +21,151 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.zIndex
 import fr.bdst.aatt.data.model.Activity
 import fr.bdst.aatt.data.model.ActivityType
 import fr.bdst.aatt.data.util.StatisticsCalculator
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
+import kotlin.math.roundToInt
+
+/**
+ * Composant personnalisé de type "roue" pour sélectionner des nombres
+ * Simule un effet de défilement circulaire des valeurs
+ */
+@Composable
+fun NumberPickerWheel(
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    range: IntRange,
+    label: String,
+    formatNumber: (Int) -> String = { it.toString().padStart(2, '0') }
+) {
+    // Convertir la position actuelle en offset pour l'animation
+    val density = LocalDensity.current
+    val itemHeight = with(density) { 50.dp.toPx() }
+    
+    // État pour gérer le défilement
+    val scrollState = rememberScrollableState { delta ->
+        // Calculer le nouveau décalage basé sur le mouvement
+        val scrollAmount = -delta / itemHeight
+        if (abs(scrollAmount) > 0.1f) {
+            // Calculer la nouvelle valeur
+            var newVal = value
+            if (scrollAmount > 0) {
+                newVal = if (newVal < range.last) newVal + 1 else range.first
+            } else {
+                newVal = if (newVal > range.first) newVal - 1 else range.last
+            }
+            onValueChange(newVal)
+        }
+        delta
+    }
+    
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier.width(IntrinsicSize.Min)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        
+        // Zone de défilement avec effet visuel
+        Box(
+            modifier = Modifier
+                .height(120.dp)
+                .width(60.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+            contentAlignment = Alignment.Center
+        ) {
+            // Indicateur de sélection (la zone sélectionnée)
+            Box(
+                modifier = Modifier
+                    .height(50.dp)
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                    .zIndex(1f)
+            )
+            
+            // Les valeurs visibles (actuelle + 2 au-dessus et 2 en-dessous)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .scrollable(
+                        orientation = Orientation.Vertical,
+                        state = scrollState
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                // Valeur principale (sélectionnée)
+                Text(
+                    text = formatNumber(value),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.offset { IntOffset(0, 0) }
+                )
+                
+                // Valeur au-dessus +1
+                val valueAbove1 = if (value < range.last) value + 1 else range.first
+                Text(
+                    text = formatNumber(valueAbove1),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
+                        .offset { IntOffset(0, -itemHeight.roundToInt()) }
+                        .alpha(0.6f)
+                )
+                
+                // Valeur au-dessus +2
+                val valueAbove2 = if (valueAbove1 < range.last) valueAbove1 + 1 else range.first
+                Text(
+                    text = formatNumber(valueAbove2),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier
+                        .offset { IntOffset(0, (-itemHeight * 2).roundToInt()) }
+                        .alpha(0.3f)
+                )
+                
+                // Valeur en-dessous -1
+                val valueBelow1 = if (value > range.first) value - 1 else range.last
+                Text(
+                    text = formatNumber(valueBelow1),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
+                        .offset { IntOffset(0, itemHeight.roundToInt()) }
+                        .alpha(0.6f)
+                )
+                
+                // Valeur en-dessous -2
+                val valueBelow2 = if (valueBelow1 > range.first) valueBelow1 - 1 else range.last
+                Text(
+                    text = formatNumber(valueBelow2),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier
+                        .offset { IntOffset(0, (itemHeight * 2).roundToInt()) }
+                        .alpha(0.3f)
+                )
+            }
+        }
+    }
+}
 
 /**
  * Boîte de dialogue pour éditer les heures de début et de fin d'une activité
@@ -533,76 +667,16 @@ fun ActivityEditDialog(
                                     horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    // Sélecteur d'heure (0-23) - Version améliorée avec flèches verticales
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center,
-                                        modifier = Modifier.padding(horizontal = 8.dp)
-                                    ) {
-                                        Text("Heure", style = MaterialTheme.typography.bodyMedium)
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        
-                                        // Flèche vers le haut
-                                        IconButton(
-                                            onClick = { 
-                                                selectedHour = if (selectedHour < 23) selectedHour + 1 else 0
-                                                applyCurrentChanges()
-                                            },
-                                            modifier = Modifier.size(40.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.KeyboardArrowUp,
-                                                contentDescription = "Heure suivante",
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                        
-                                        // Valeur avec geste de glissement
-                                        Box(
-                                            contentAlignment = Alignment.Center,
-                                            modifier = Modifier
-                                                .padding(vertical = 8.dp)
-                                                .size(60.dp, 50.dp)
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                                                .pointerInput(Unit) {
-                                                    detectVerticalDragGestures { _, dragAmount ->
-                                                        when {
-                                                            dragAmount < -16 -> { // Seuil augmenté de -2 à -8 pour réduire la sensibilité
-                                                                selectedHour = if (selectedHour < 23) selectedHour + 1 else 0
-                                                                applyCurrentChanges()
-                                                            }
-                                                            dragAmount > 16 -> { // Seuil augmenté de 2 à 8 pour réduire la sensibilité
-                                                                selectedHour = if (selectedHour > 0) selectedHour - 1 else 23
-                                                                applyCurrentChanges()
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                        ) {
-                                            Text(
-                                                text = selectedHour.toString().padStart(2, '0'),
-                                                style = MaterialTheme.typography.headlineMedium,
-                                                fontSize = 28.sp,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                        }
-                                        
-                                        // Flèche vers le bas
-                                        IconButton(
-                                            onClick = { 
-                                                selectedHour = if (selectedHour > 0) selectedHour - 1 else 23
-                                                applyCurrentChanges()
-                                            },
-                                            modifier = Modifier.size(40.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.KeyboardArrowDown,
-                                                contentDescription = "Heure précédente",
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                    }
+                                    // Sélecteur d'heure (0-23) - Version améliorée avec roue de défilement
+                                    NumberPickerWheel(
+                                        value = selectedHour,
+                                        onValueChange = {
+                                            selectedHour = it
+                                            applyCurrentChanges()
+                                        },
+                                        range = 0..23,
+                                        label = "Heure"
+                                    )
                                     
                                     // Séparateur
                                     Text(
@@ -613,76 +687,16 @@ fun ActivityEditDialog(
                                         modifier = Modifier.padding(horizontal = 8.dp)
                                     )
                                     
-                                    // Sélecteur de minutes (0-59) - Version améliorée avec flèches verticales
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center,
-                                        modifier = Modifier.padding(horizontal = 8.dp)
-                                    ) {
-                                        Text("Minute", style = MaterialTheme.typography.bodyMedium)
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        
-                                        // Flèche vers le haut
-                                        IconButton(
-                                            onClick = { 
-                                                selectedMinute = if (selectedMinute < 59) selectedMinute + 1 else 0
-                                                applyCurrentChanges()
-                                            },
-                                            modifier = Modifier.size(40.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.KeyboardArrowUp,
-                                                contentDescription = "Minute suivante",
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                        
-                                        // Valeur avec geste de glissement
-                                        Box(
-                                            contentAlignment = Alignment.Center,
-                                            modifier = Modifier
-                                                .padding(vertical = 8.dp)
-                                                .size(60.dp, 50.dp)
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                                                .pointerInput(Unit) {
-                                                    detectVerticalDragGestures { _, dragAmount ->
-                                                        when {
-                                                            dragAmount < -8 -> { // Seuil augmenté de -2 à -8 pour réduire la sensibilité
-                                                                selectedMinute = if (selectedMinute < 59) selectedMinute + 1 else 0
-                                                                applyCurrentChanges()
-                                                            }
-                                                            dragAmount > 8 -> { // Seuil augmenté de 2 à 8 pour réduire la sensibilité
-                                                                selectedMinute = if (selectedMinute > 0) selectedMinute - 1 else 59
-                                                                applyCurrentChanges()
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                        ) {
-                                            Text(
-                                                text = selectedMinute.toString().padStart(2, '0'),
-                                                style = MaterialTheme.typography.headlineMedium,
-                                                fontSize = 28.sp,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                        }
-                                        
-                                        // Flèche vers le bas
-                                        IconButton(
-                                            onClick = { 
-                                                selectedMinute = if (selectedMinute > 0) selectedMinute - 1 else 59
-                                                applyCurrentChanges()
-                                            },
-                                            modifier = Modifier.size(40.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.KeyboardArrowDown,
-                                                contentDescription = "Minute précédente",
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                    }
+                                    // Sélecteur de minutes (0-59) - Version améliorée avec roue de défilement
+                                    NumberPickerWheel(
+                                        value = selectedMinute,
+                                        onValueChange = {
+                                            selectedMinute = it
+                                            applyCurrentChanges()
+                                        },
+                                        range = 0..59,
+                                        label = "Minute"
+                                    )
                                 }
                             }
                         }
