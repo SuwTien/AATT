@@ -1,6 +1,26 @@
 # Historique des versions - AATT (Atlantic Automatique Time Tracker)
 
-## Version de développement - 3 mai 2025
+## Version de développement - 3 mai 2025 (après-midi)
+
+### Correction de bugs dans l'édition d'activités 🐛
+
+- Résolution de problèmes de synchronisation lors de l'édition des activités :
+  - Correction du bug où les modifications d'heure de début étaient écrasées par les modifications d'heure de fin
+  - Implémentation d'une méthode `updateStartAndEndTime` pour mettre à jour les deux valeurs en une seule opération atomique
+  - Ajout d'un mécanisme de rafraîchissement explicite de l'UI après les modifications
+
+- Améliorations techniques :
+  - Création d'une méthode publique `refreshActivitiesForCurrentDay()` dans EditViewModel
+  - Intégration du rafraîchissement dans les callbacks de la boîte de dialogue d'édition
+  - Meilleure séparation des responsabilités entre le ViewModel et l'UI
+
+- Impacts des modifications :
+  - Interface utilisateur plus réactive après les modifications
+  - Correction des problèmes de visibilité des changements effectués
+  - Élimination des cas où les modifications n'apparaissaient pas immédiatement
+  - Meilleure expérience utilisateur lors de l'édition des activités
+
+## Version de développement - 3 mai 2025 (matin)
 
 ### Améliorations de l'interface des statistiques hebdomadaires 📊
 

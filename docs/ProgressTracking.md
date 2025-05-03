@@ -166,7 +166,15 @@ Cette planification permettra de développer les écrans statistiques de manièr
 
 ## Journal des modifications
 
-### 2025-05-03
+### 2025-05-03 (après-midi)
+- Correction des problèmes de synchronisation lors de l'édition des activités :
+  - Résolution du bug où les modifications d'heure de début étaient écrasées par les modifications d'heure de fin
+  - Implémentation d'une méthode `updateStartAndEndTime` pour mettre à jour les deux valeurs en une seule opération atomique
+  - Ajout d'une fonction publique `refreshActivitiesForCurrentDay()` dans EditViewModel pour rafraîchir l'UI après les modifications
+  - Correction du problème de non-rafraîchissement de la liste des activités après édition
+  - Amélioration de l'interface utilisateur pour une expérience plus réactive
+
+### 2025-05-03 (matin)
 - Finalisation des améliorations visuelles des statistiques hebdomadaires :
   - Ajout d'un fond coloré pour les titres des jours avec centrage du texte
   - Suppression de la date numérique des titres de jours pour une interface plus épurée
