@@ -6,6 +6,7 @@ Que ce soit pour une nouvelle application ou un travaille existant.
 On a déjà fait quelques applications ensemble:
 SBTT : Une appli de time tracker.
 FPR : Fast photo renamer, j'en suis vraiment très content je l'utilise tous les jours dans mon travail.
+AATT : Atlantic Automatique Time Tracker, notre deuxième application complète et professionnelle.
 AVP, une 1ere version slutter de FPR, 
 Courses manager : Pas finie mais utilisable et pratique.
 

@@ -1,5 +1,26 @@
 # Historique des versions - AATT (Atlantic Automatique Time Tracker)
 
+## Version 1.1.2 - 4 mai 2025 - Code version Play Store : 4
+
+### Améliorations et corrections 🚀
+
+- Mise à jour de l'icône de l'application :
+  - Intégration des nouvelles icônes pour toutes les densités d'écran
+  - Optimisation des icônes au format WebP pour de meilleures performances
+
+- Correction de bugs :
+  - Résolution des problèmes de compilation liés aux ressources
+  - Optimisation des performances générales de l'application
+
+- Préparation pour le déploiement :
+  - Mise à jour de la version pour le Google Play Store
+  - Configuration finalisée pour la distribution officielle
+
+### Impacts des modifications
+- Identité visuelle renforcée avec les nouvelles icônes optimisées
+- Amélioration de la stabilité de l'application
+- Expérience utilisateur plus fluide et professionnelle
+
 ## Version de développement - 3 mai 2025 (fin d'après-midi)
 
 ### Améliorations majeures de l'interface utilisateur 🎨

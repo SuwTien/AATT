@@ -166,6 +166,14 @@ Cette planification permettra de développer les écrans statistiques de manièr
 
 ## Journal des modifications
 
+### 2025-05-04
+- Création et déploiement de la version 1.1.2 (code version Play Store : 4) :
+  - Optimisation des icônes de l'application au format WebP pour toutes les densités d'écran
+  - Résolution des problèmes de compilation liés à la duplication des ressources d'icônes
+  - Configuration des icônes adaptatives d'Android pour une meilleure intégration système
+  - Mise à jour du numéro de version pour le Google Play Store
+  - Documentation des modifications dans le CHANGELOG.md
+
 ### 2025-05-03 (fin d'après-midi)
 - Améliorations majeures de l'interface utilisateur :
   - Refonte complète du sélecteur d'heures dans le dialogue d'édition avec une roue de défilement intuitive

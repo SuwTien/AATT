@@ -75,6 +75,13 @@
    - Réduction des paddings pour maximiser l'espace vertical
    - Utilisation de codes couleur cohérents pour les activités
 
+4. **Optimisation des icônes et ressources graphiques** ✅
+   - Conversion des icônes au format WebP pour améliorer les performances
+   - Organisation optimale des ressources pour toutes les densités d'écran
+   - Configuration correcte du système d'icônes adaptatives d'Android
+   - Résolution des problèmes de duplication de ressources
+   - Documentation du système d'icônes pour maintenir la cohérence future
+
 ### Phase 4: Tests et finalisation 🔜
 1. **Tests unitaires**
    - Tests pour la base de données et les repositories
@@ -101,6 +108,7 @@
 - Filtrage par date dans la page d'édition
 - Optimisation de l'interface avec meilleure utilisation de l'espace vertical
 - Réorganisation des boutons d'activité en deux rangées (3+2) pour une meilleure ergonomie
+- Version 1.1.2 avec icônes optimisées au format WebP déployée sur le Google Play Store
 
 ### En cours ⏳
 - Implémentation complète des calculs statistiques avec règles métier incluant le type DEPLACEMENT
@@ -137,3 +145,28 @@
    - Ajouter des commentaires KDoc dans le code source
    - Créer des tests unitaires pour les fonctions principales
    - Documenter les cas d'utilisation principaux
+
+## Versions publiées
+
+### Version 1.1.2 - Code version Play Store : 4 (4 mai 2025) ✅
+- Optimisation des icônes de l'application au format WebP
+- Résolution des problèmes de duplication des ressources d'icônes
+- Configuration du système d'icônes adaptatives d'Android
+- Amélioration de la stabilité et des performances de l'application
+
+### Version 1.1.1 - Code version Play Store : 3 (3 mai 2025) ✅
+- Ajout d'un écran de démarrage personnalisé avec l'image AATT
+- Refonte du sélecteur d'heures avec roue de défilement intuitive
+- Amélioration des statistiques hebdomadaires
+- Correction des bugs de synchronisation lors de l'édition des activités
+
+### Version 1.1.0 - Code version Play Store : 2 (28 avril 2025) ✅
+- Architecture modulaire pour les écrans de statistiques
+- Optimisation de l'interface utilisateur
+- Système de sauvegarde/restauration JSON robuste
+
+### Version 1.0.0 - Code version Play Store : 1 (25 avril 2025) ✅
+- Première version publiée sur le Google Play Store
+- Fonctionnalités de base pour le suivi d'activités professionnelles
+- Interface utilisateur intuitive avec Jetpack Compose
+- Organisation des boutons d'activité en deux rangées (3+2)

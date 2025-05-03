@@ -1,26 +1,24 @@
-PS J:\DEV\Android\AATT> ls J:\DEV\Android\AATT\app\assets\androidIcones
+PS J:\DEV\Android\AATT> ./gradlew installDebug                                                              
+> Task :app:processDebugResources FAILED
 
-    Directory: J:\DEV\Android\AATT\app\assets\androidIcones
+FAILURE: Build failed with an exception.
 
-Mode                 LastWriteTime         Length Name
-----                 -------------         ------ ----
-d----          03/05/2025    22:34                mipmap-hdpi
-d----          03/05/2025    22:34                mipmap-mdpi
-d----          03/05/2025    22:34                mipmap-xhdpi
-d----          03/05/2025    22:34                mipmap-xxhdpi
-d----          03/05/2025    22:34                mipmap-xxxhdpi
+* What went wrong:
+Execution failed for task ':app:processDebugResources'.
+> java.io.IOException: Couldn't delete J:\DEV\Android\AATT\app\build\intermediates\compile_and_runtime_not_namespaced_r_class_jar\debug\processDebugResources\R.jar
 
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
 
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
 
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
 
-PS J:\DEV\Android\AATT> ls J:\DEV\Android\AATT\app\assets\androidIcones\mipmap-hdpi\
+For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-    Directory: J:\DEV\Android\AATT\app\assets\androidIcones\mipmap-hdpi
-
-Mode                 LastWriteTime         Length Name
-----                 -------------         ------ ----
--a---          03/05/2025    20:32           7050 ic_launcher.png
-
-PS J:\DEV\Android\AATT>
-
-
+BUILD FAILED in 1s
+13 actionable tasks: 6 executed, 7 up-to-date
+PS J:\DEV\Android\AATT> 
