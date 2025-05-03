@@ -114,9 +114,11 @@ fun ActivityEditDialog(
     
     // Pour sauvegarder les modifications
     fun saveChanges() {
-        if (editingStart) {
-            onEditStartTime(startCalendar.timeInMillis)
-        } else if (activity.endTime != null) {
+        // Sauvegarder toujours les modifications de l'heure de début
+        onEditStartTime(startCalendar.timeInMillis)
+        
+        // Sauvegarder les modifications de l'heure de fin uniquement si l'activité a une fin
+        if (activity.endTime != null) {
             onEditEndTime(endCalendar.timeInMillis)
         }
     }
@@ -159,7 +161,11 @@ fun ActivityEditDialog(
                     Column(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { editingStart = true }
+                            .clickable { 
+                                // Sauvegarder les modifications actuelles avant de changer d'onglet
+                                applyCurrentChanges()
+                                editingStart = true 
+                            }
                             .padding(vertical = 8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -206,6 +212,8 @@ fun ActivityEditDialog(
                         modifier = Modifier
                             .weight(1f)
                             .clickable(enabled = activity.endTime != null) { 
+                                // Sauvegarder les modifications actuelles avant de changer d'onglet
+                                applyCurrentChanges()
                                 if (activity.endTime != null) editingStart = false 
                             }
                             .padding(vertical = 8.dp)
@@ -284,7 +292,11 @@ fun ActivityEditDialog(
                         modifier = Modifier.weight(1f) // Poids égal pour les deux colonnes
                     ) {
                         IconButton(
-                            onClick = { showDatePicker = true },
+                            onClick = { 
+                                // Sauvegarder les modifications actuelles avant de basculer vers la vue calendrier
+                                applyCurrentChanges()
+                                showDatePicker = true
+                            },
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
@@ -305,7 +317,11 @@ fun ActivityEditDialog(
                         modifier = Modifier.weight(1f) // Poids égal pour les deux colonnes
                     ) {
                         IconButton(
-                            onClick = { showDatePicker = false },
+                            onClick = { 
+                                // Sauvegarder les modifications actuelles avant de basculer vers la vue horloge
+                                applyCurrentChanges()
+                                showDatePicker = false 
+                            },
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
