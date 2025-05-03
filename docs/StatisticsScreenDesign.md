@@ -338,7 +338,9 @@ Pour optimiser l'expérience sur des écrans de tailles différentes, quelques a
 
 ## Accent sur la page hebdomadaire
 
-Puisque la page hebdomadaire est la plus importante pour l'utilisateur, voici des optimisations spécifiques :
+La vue hebdomadaire étant la plus pertinente pour l'utilisateur, elle est désormais configurée comme l'onglet par défaut lors de l'ouverture de l'écran des statistiques. Cette décision a été prise pour offrir immédiatement la vue la plus utile sans navigation supplémentaire.
+
+Voici les optimisations spécifiques à cette vue :
 
 1. **Tableau compact mais lisible**
    - Police légèrement plus grande pour les informations clés

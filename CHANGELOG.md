@@ -1,5 +1,39 @@
 # Historique des versions - AATT (Atlantic Automatique Time Tracker)
 
+## Version de développement - 3 mai 2025 (fin d'après-midi)
+
+### Améliorations majeures de l'interface utilisateur 🎨
+
+- Refonte complète du sélecteur d'heures dans le dialogue d'édition :
+  - Implémentation d'une roue de défilement intuitive pour sélectionner heures et minutes
+  - Gestion des gestes de glissement vertical pour une navigation fluide
+  - Chiffres plus grands et centrés pour une meilleure lisibilité
+  - Animation avec effet de dégradé pour une expérience visuelle améliorée
+
+- Optimisation de l'affichage du calendrier :
+  - Réduction des marges pour optimiser l'espace
+  - Redimensionnement du cercle de sélection pour éviter les débordements
+  - Ajustement de la hauteur des lignes pour une meilleure lisibilité
+
+- Ajout d'un écran de démarrage :
+  - Implémentation d'un splash screen personnalisé affichant l'image AATT en plein écran
+  - Transition fluide vers l'écran principal de l'application
+
+- Modification de l'icône de l'application :
+  - Intégration de l'icône personnalisée AATTIcone512
+  - Configuration des icônes adaptatives pour les différentes formes (standard et rond)
+
+- Amélioration de l'UX des statistiques :
+  - Modification de l'onglet par défaut des statistiques (vue hebdomadaire au lieu de quotidienne)
+  - Meilleure expérience utilisateur grâce à un affichage plus pertinent dès l'ouverture
+
+### Impacts des modifications
+- Interface plus moderne et intuitive pour la sélection des heures
+- Optimisation de l'espace disponible dans les différents écrans
+- Première impression améliorée avec un splash screen professionnel
+- Identité visuelle renforcée avec une icône personnalisée
+- Meilleure expérience utilisateur dans la section statistiques
+
 ## Version de développement - 3 mai 2025 (après-midi)
 
 ### Correction de bugs dans l'édition d'activités 🐛

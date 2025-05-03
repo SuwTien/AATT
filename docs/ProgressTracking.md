@@ -166,6 +166,15 @@ Cette planification permettra de développer les écrans statistiques de manièr
 
 ## Journal des modifications
 
+### 2025-05-03 (fin d'après-midi)
+- Améliorations majeures de l'interface utilisateur :
+  - Refonte complète du sélecteur d'heures dans le dialogue d'édition avec une roue de défilement intuitive
+  - Optimisation de l'affichage du calendrier avec marges réduites et taille du cercle de sélection ajustée
+  - Ajout d'un écran de démarrage personnalisé avec l'image AATT en plein écran
+  - Changement de l'icône de l'application avec AATTIcone512
+  - Modification de l'onglet par défaut des statistiques de "Jour" à "Semaine"
+  - Mise à jour du CHANGELOG.md pour documenter les améliorations apportées
+
 ### 2025-05-03 (après-midi)
 - Correction des problèmes de synchronisation lors de l'édition des activités :
   - Résolution du bug où les modifications d'heure de début étaient écrasées par les modifications d'heure de fin
