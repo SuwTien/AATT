@@ -76,7 +76,7 @@ fun WeeklyStatsContent(viewModel: StatsViewModel) {
                         
                         Spacer(modifier = Modifier.height(16.dp))
                         
-                        weeklyStats?.let { stats ->
+                        weeklyStats?.let { stats -> 
                             // Détail par type d'activité
                             val vsDuration = weeklyActivitiesByDay.values.flatten()
                                 .filter { it.type == ActivityType.VS }
@@ -246,17 +246,7 @@ fun WeeklyStatsContent(viewModel: StatsViewModel) {
                 Spacer(modifier = Modifier.height(16.dp))
             }
             
-            // Titre de la section détaillée
-            item {
-                Text(
-                    text = "DÉTAIL PAR JOUR",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
-            
-            // Tableau des détails par jour
+            // Tableau des détails par jour - sans titre explicite
             item {
                 Card(
                     modifier = Modifier
@@ -271,12 +261,7 @@ fun WeeklyStatsContent(viewModel: StatsViewModel) {
                             .fillMaxWidth()
                             .padding(8.dp)
                     ) {
-                        // En-tête du tableau
-                        DayDetailHeader()
-                        
-                        Divider()
-                        
-                        // Corps du tableau
+                        // Corps du tableau - affichage simplifié des jours sans en-tête
                         weeklyActivitiesByDay.entries.sortedBy { it.key.timeInMillis }.forEach { (day, activities) ->
                             if (activities.isEmpty()) {
                                 DayDetailRowEmpty(
@@ -293,63 +278,9 @@ fun WeeklyStatsContent(viewModel: StatsViewModel) {
                             
                             Divider()
                         }
-                        
-                        // Ligne de total
-                        weeklyStats?.let { stats ->
-                            val vsTotal = weeklyActivitiesByDay.values.flatten()
-                                .filter { it.type == ActivityType.VS }
-                                .sumOf { StatisticsCalculator.calculateActivityDuration(it) }
-                            
-                            val domicileTotal = weeklyActivitiesByDay.values.flatten()
-                                .filter { it.type == ActivityType.DOMICILE }
-                                .sumOf { StatisticsCalculator.calculateActivityDuration(it) }
-                            
-                            val deplacementTotal = stats.deplacementDuration
-                            
-                            DayDetailRowTotal(
-                                vsDuration = vsTotal,
-                                domicileDuration = domicileTotal,
-                                deplacementDuration = deplacementTotal,
-                                routeDuration = stats.routeDuration,
-                                routeAdjustedDuration = stats.routeDurationAdjusted,
-                                pauseDuration = stats.pauseDuration,
-                                totalWorkDuration = stats.workDuration
-                            )
-                        }
                     }
                 }
             }
-        }
-    }
-}
-
-/**
- * En-tête des colonnes pour le tableau détaillé par jour
- */
-@Composable
-fun DayDetailHeader() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    ) {
-        // Colonne jour
-        Text(
-            text = "Jour",
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.width(80.dp)
-        )
-        
-        // Colonne activités
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
-            Text(
-                text = "Activités",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold
-            )
         }
     }
 }
@@ -362,29 +293,41 @@ fun DayDetailRowEmpty(
     day: Calendar,
     dayFormatter: java.text.SimpleDateFormat
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Jour
-        Text(
-            text = dayFormatter.format(day.time),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.width(80.dp)
-        )
+        // Jour en titre au milieu avec fond gris
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = dayFormatter.format(day.time),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
         
         // Message "Aucune activité"
         Text(
             text = "--- Aucune activité ---",
             style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.padding(vertical = 8.dp)
         )
-        
-        // Colonne vide pour l'alignement
-        Spacer(modifier = Modifier.width(120.dp))
     }
 }
 
@@ -457,7 +400,10 @@ fun DayDetailRow(
                 // Si on a un déplacement en attente, l'inclure dans cette VS
                 val activityDuration = StatisticsCalculator.calculateActivityDuration(activity)
                 val totalDuration = activityDuration + pendingDeplacementDuration
-                activitiesToDisplay.add(Pair("VS", StatisticsCalculator.formatDuration(totalDuration)))
+                activitiesToDisplay.add(Pair(
+                    if (pendingDeplacementDuration > 0) "VS + Dépl." else "VS", 
+                    StatisticsCalculator.formatDuration(totalDuration)
+                ))
                 totalDeplacementDuration += pendingDeplacementDuration
                 pendingDeplacementDuration = 0L
             }
@@ -496,148 +442,129 @@ fun DayDetailRow(
     // - Déplacements
     // - Domicile
     // - Route au-delà de 1h30 par jour
-    val totalWorkTime = vsDuration + totalDeplacementDuration + domicileDuration + routeAdjusted
+    val totalWorkWithoutDomicile = vsDuration + totalDeplacementDuration + routeAdjusted
+    val totalWorkTime = totalWorkWithoutDomicile + domicileDuration
     
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.Top
+            .padding(vertical = 8.dp)
     ) {
-        // Jour
-        Text(
-            text = dayFormatter.format(day.time),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.width(80.dp)
-        )
-        
-        // Activités
-        Column(
-            modifier = Modifier.weight(1f)
+        // Jour en titre au milieu avec fond gris
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
         ) {
-            // Afficher toutes les activités dans l'ordre chronologique
-            activitiesToDisplay.forEach { (type, duration) ->
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(
-                    text = "$type: $duration",
-                    style = MaterialTheme.typography.bodySmall
+                    text = dayFormatter.format(day.time),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
                 )
             }
-            
-            // Afficher le total PAUSE si présent
-            if (pauseDuration > 0) {
-                Spacer(modifier = Modifier.height(4.dp))
+        }
+        
+        // Liste des activités - chaque type à gauche et durée à droite
+        activitiesToDisplay.forEach { (type, duration) ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Text(
-                    text = "Pause: ${StatisticsCalculator.formatDuration(pauseDuration)}",
-                    style = MaterialTheme.typography.bodySmall
+                    text = type,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = duration,
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
-            
-            // Ajouter une ligne vide pour séparer si nécessaire
-            if ((activitiesToDisplay.isNotEmpty() || pauseDuration > 0) && domicileDuration > 0) {
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-            
-            // Afficher le total DOMICILE à la fin
-            if (domicileDuration > 0) {
+        }
+        
+        // Afficher le total PAUSE si présent
+        if (pauseDuration > 0) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Text(
-                    text = "Domicile: ${StatisticsCalculator.formatDuration(domicileDuration)}",
-                    style = MaterialTheme.typography.bodySmall
+                    text = "Pause",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = StatisticsCalculator.formatDuration(pauseDuration),
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
-            
-            // Ajouter une ligne vide avant le total travail
-            Spacer(modifier = Modifier.height(4.dp))
-            
-            // Afficher le total du travail
+        }
+        
+        // Afficher un sous-total sans domicile
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 2.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Text(
-                text = "Total travail: ${StatisticsCalculator.formatDuration(totalWorkTime)}",
-                style = MaterialTheme.typography.bodySmall,
+                text = "Total hors domicile",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = StatisticsCalculator.formatDuration(totalWorkWithoutDomicile),
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold
             )
         }
-    }
-}
-
-/**
- * Ligne de total pour le tableau détaillé par jour
- */
-@Composable
-fun DayDetailRowTotal(
-    vsDuration: Long,
-    domicileDuration: Long,
-    deplacementDuration: Long,
-    routeDuration: Long,
-    routeAdjustedDuration: Long,
-    pauseDuration: Long,
-    totalWorkDuration: Long
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        // En-tête TOTAL
-        Text(
-            text = "TOTAL",
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.width(80.dp)
-        )
         
-        // Activités
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
-            Text(
-                text = "VS: ${StatisticsCalculator.formatDuration(vsDuration)}",
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Text(
-                text = "DOM: ${StatisticsCalculator.formatDuration(domicileDuration)}",
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Text(
-                text = "DEPL: ${StatisticsCalculator.formatDuration(deplacementDuration)}",
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Text(
-                text = "Total travail: ${StatisticsCalculator.formatDuration(totalWorkDuration)}",
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.ExtraBold
-            )
+        // Afficher le total DOMICILE à la fin
+        if (domicileDuration > 0) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Domicile",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = StatisticsCalculator.formatDuration(domicileDuration),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
         
-        // Route et pause
-        Column(
-            modifier = Modifier.width(120.dp),
-            horizontalAlignment = Alignment.End
+        // Afficher le total du travail
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Route: ${StatisticsCalculator.formatDuration(routeDuration)}",
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.End
+                text = "Total travail",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold
             )
-            
             Text(
-                text = "Comptée: ${StatisticsCalculator.formatDuration(routeAdjustedDuration)}",
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.End
-            )
-            
-            Text(
-                text = "Pause: ${StatisticsCalculator.formatDuration(pauseDuration)}",
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.End
+                text = StatisticsCalculator.formatDuration(totalWorkTime),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold
             )
         }
     }
