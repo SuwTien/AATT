@@ -1,5 +1,8 @@
 package fr.bdst.aatt.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import fr.bdst.aatt.data.model.Activity
 import fr.bdst.aatt.data.model.ActivityType
+import fr.bdst.aatt.data.util.SAFBackupHelper
 import fr.bdst.aatt.data.util.StatisticsCalculator
 import fr.bdst.aatt.ui.components.DateSelector
 import fr.bdst.aatt.viewmodel.EditViewModel
@@ -48,6 +52,7 @@ fun EditScreen(
     val dailyActivities by viewModel.dailyActivities.collectAsState()
     val backups by viewModel.backups.collectAsState()
     val selectedDate by viewModel.selectedDate.collectAsState()
+    val hasSAFDirectory by viewModel.hasSAFDirectory.collectAsState()
     
     // Formats de date/heure
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
@@ -59,7 +64,8 @@ fun EditScreen(
     var showClearConfirmDialog by remember { mutableStateOf(false) }
     var showBackupDialog by remember { mutableStateOf(false) }
     var showBackupListDialog by remember { mutableStateOf(false) }
-    var showRestoreConfirmDialog by remember { mutableStateOf<String?>(null) } // Stocke le chemin de la sauvegarde à restaurer
+    var showRestoreConfirmDialog by remember { mutableStateOf<Uri?>(null) } // Stocke l'URI de la sauvegarde à restaurer
+    var showSetupSAFDialog by remember { mutableStateOf(false) }
     var backupName by remember { mutableStateOf("") }
     
     // État pour le menu déroulant
@@ -68,6 +74,15 @@ fun EditScreen(
     // État pour le Snackbar de résultat
     var showSnackbar by remember { mutableStateOf(false) }
     
+    // Launcher pour sélectionner le dossier de sauvegarde
+    val directoryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        uri?.let {
+            viewModel.setBackupDirectoryUri(context, uri)
+        }
+    }
+    
     // Effet pour afficher le Snackbar quand un résultat d'opération est disponible
     LaunchedEffect(operationResult) {
         if (operationResult != null) {
@@ -75,9 +90,12 @@ fun EditScreen(
         }
     }
     
-    // Charger la liste des sauvegardes au lancement de l'écran
+    // Vérifier si le dossier de sauvegarde est défini au lancement de l'écran
     LaunchedEffect(key1 = Unit) {
-        viewModel.refreshBackupsList(context)
+        viewModel.checkSAFDirectory(context)
+        if (hasSAFDirectory) {
+            viewModel.refreshSAFBackupsList(context)
+        }
     }
     
     Scaffold(
@@ -117,9 +135,13 @@ fun EditScreen(
                                     )
                                 },
                                 onClick = { 
-                                    viewModel.refreshBackupsList(context)
+                                    if (!hasSAFDirectory) {
+                                        showSetupSAFDialog = true
+                                    } else {
+                                        viewModel.refreshSAFBackupsList(context)
+                                        showBackupListDialog = true
+                                    }
                                     showDropdownMenu = false
-                                    showBackupListDialog = true
                                 }
                             )
                             
@@ -134,7 +156,26 @@ fun EditScreen(
                                 },
                                 onClick = {
                                     showDropdownMenu = false
-                                    showBackupDialog = true
+                                    if (!hasSAFDirectory) {
+                                        showSetupSAFDialog = true
+                                    } else {
+                                        showBackupDialog = true
+                                    }
+                                }
+                            )
+                            
+                            // Option Configurer dossier (nouveau)
+                            DropdownMenuItem(
+                                text = { Text("Dossier") },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Folder,
+                                        contentDescription = "Configurer le dossier de sauvegarde"
+                                    )
+                                },
+                                onClick = {
+                                    showDropdownMenu = false
+                                    directoryLauncher.launch(null)
                                 }
                             )
                             
@@ -235,6 +276,35 @@ fun EditScreen(
             }
         }
         
+        // Boîte de dialogue de configuration initiale du SAF
+        if (showSetupSAFDialog) {
+            AlertDialog(
+                onDismissRequest = { showSetupSAFDialog = false },
+                title = { Text("Configuration requise") },
+                text = { 
+                    Text(
+                        "Pour utiliser les fonctionnalités de sauvegarde, vous devez d'abord " +
+                        "sélectionner un dossier où stocker vos sauvegardes."
+                    ) 
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            directoryLauncher.launch(null)
+                            showSetupSAFDialog = false
+                        }
+                    ) {
+                        Text("Sélectionner un dossier")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showSetupSAFDialog = false }) {
+                        Text("Annuler")
+                    }
+                }
+            )
+        }
+        
         // Boîte de dialogue de confirmation pour effacer toutes les activités
         if (showClearConfirmDialog) {
             AlertDialog(
@@ -283,7 +353,7 @@ fun EditScreen(
                 confirmButton = {
                     Button(
                         onClick = {
-                            viewModel.backupDatabase(context, backupName.trim())
+                            viewModel.backupDatabaseSAF(context, backupName.trim())
                             showBackupDialog = false
                             backupName = ""
                         }
@@ -304,22 +374,21 @@ fun EditScreen(
         
         // Boîte de dialogue pour afficher la liste des sauvegardes
         if (showBackupListDialog) {
-            BackupListDialog(
+            SAFBackupListDialog(
                 backups = backups,
                 onDismiss = { showBackupListDialog = false },
-                onRestore = { backupPath -> 
-                    // Maintenant on stocke juste le chemin et on montre une confirmation
+                onRestore = { backupUri -> 
                     showBackupListDialog = false
-                    showRestoreConfirmDialog = backupPath
+                    showRestoreConfirmDialog = backupUri
                 },
-                onDelete = { backupPath -> 
-                    viewModel.deleteBackup(context, backupPath)
+                onDelete = { backupUri -> 
+                    viewModel.deleteBackupSAF(context, backupUri)
                 }
             )
         }
         
         // Boîte de dialogue de confirmation pour restaurer une sauvegarde
-        showRestoreConfirmDialog?.let { backupPath -> 
+        showRestoreConfirmDialog?.let { backupUri -> 
             AlertDialog(
                 onDismissRequest = { showRestoreConfirmDialog = null },
                 title = { Text("Confirmation de restauration") },
@@ -332,9 +401,7 @@ fun EditScreen(
                 confirmButton = {
                     Button(
                         onClick = {
-                            // Restaurer la sauvegarde avec la nouvelle approche JSON
-                            // Pas besoin de fermer la base de données manuellement
-                            viewModel.restoreDatabase(context, backupPath)
+                            viewModel.restoreDatabaseSAF(context, backupUri)
                             showRestoreConfirmDialog = null
                         }
                     ) {
@@ -361,15 +428,15 @@ fun EditScreen(
     }
 }
 
-// Remaining code remains unchanged
+// Composant pour afficher la liste des sauvegardes SAF
 @Composable
-fun BackupListDialog(
-    backups: List<Pair<String, String>>,
+fun SAFBackupListDialog(
+    backups: List<SAFBackupHelper.BackupInfo>,
     onDismiss: () -> Unit,
-    onRestore: (String) -> Unit,
-    onDelete: (String) -> Unit
+    onRestore: (Uri) -> Unit,
+    onDelete: (Uri) -> Unit
 ) {
-    var showDeleteConfirmDialog by remember { mutableStateOf<String?>(null) }
+    var showDeleteConfirmDialog by remember { mutableStateOf<Uri?>(null) }
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -390,12 +457,11 @@ fun BackupListDialog(
                         .fillMaxWidth()
                         .heightIn(min = 100.dp, max = 300.dp)
                 ) {
-                    items(backups) { (name, path) -> 
-                        BackupItem(
-                            backupName = name,
-                            backupPath = path,
-                            onRestore = { onRestore(path) },
-                            onDelete = { showDeleteConfirmDialog = path }
+                    items(backups) { backup -> 
+                        SAFBackupItem(
+                            backup = backup,
+                            onRestore = { onRestore(backup.uri) },
+                            onDelete = { showDeleteConfirmDialog = backup.uri }
                         )
                         HorizontalDivider()
                     }
@@ -410,7 +476,7 @@ fun BackupListDialog(
     )
     
     // Boîte de dialogue de confirmation de suppression
-    showDeleteConfirmDialog?.let { path -> 
+    showDeleteConfirmDialog?.let { uri -> 
         AlertDialog(
             onDismissRequest = { showDeleteConfirmDialog = null },
             title = { Text("Confirmation") },
@@ -423,7 +489,7 @@ fun BackupListDialog(
             confirmButton = {
                 Button(
                     onClick = {
-                        onDelete(path)
+                        onDelete(uri)
                         showDeleteConfirmDialog = null
                     }
                 ) {
@@ -440,16 +506,11 @@ fun BackupListDialog(
 }
 
 @Composable
-fun BackupItem(
-    backupName: String,
-    backupPath: String,
+fun SAFBackupItem(
+    backup: SAFBackupHelper.BackupInfo,
     onRestore: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val file = remember(backupPath) { File(backupPath) }
-    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
-    val lastModified = remember(file) { dateFormat.format(Date(file.lastModified())) }
-    
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -467,13 +528,13 @@ fun BackupItem(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = backupName,
+                text = backup.name,
                 style = MaterialTheme.typography.bodyLarge,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = "Modifié le: $lastModified",
+                text = "Modifié le: ${backup.getFormattedDate()}",
                 style = MaterialTheme.typography.bodySmall
             )
         }

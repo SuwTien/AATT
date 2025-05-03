@@ -57,6 +57,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     
+    // DocumentFile pour le Storage Access Framework (SAF)
+    implementation("androidx.documentfile:documentfile:1.0.1")
+    
     // Compose UI
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)

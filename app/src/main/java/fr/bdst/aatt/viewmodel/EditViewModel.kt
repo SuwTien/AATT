@@ -1,15 +1,15 @@
 package fr.bdst.aatt.viewmodel
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import fr.bdst.aatt.data.db.AATTDatabase
 import fr.bdst.aatt.data.model.Activity
 import fr.bdst.aatt.data.repository.ActivityRepository
 import fr.bdst.aatt.data.util.AppEvents
-import fr.bdst.aatt.data.util.DatabaseBackupHelper
+import fr.bdst.aatt.data.util.SAFBackupHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -32,13 +32,17 @@ class EditViewModel(private val repository: ActivityRepository) : ViewModel() {
     private val _dailyActivities = MutableStateFlow<List<Activity>>(emptyList())
     val dailyActivities: StateFlow<List<Activity>> = _dailyActivities
     
-    // État pour les sauvegardes disponibles
-    private val _backups = MutableStateFlow<List<Pair<String, String>>>(emptyList())
-    val backups: StateFlow<List<Pair<String, String>>> = _backups
+    // État pour les sauvegardes disponibles (modifié pour utiliser le nouveau format)
+    private val _backups = MutableStateFlow<List<SAFBackupHelper.BackupInfo>>(emptyList())
+    val backups: StateFlow<List<SAFBackupHelper.BackupInfo>> = _backups
     
     // État pour les résultats des opérations de sauvegarde/restauration
     private val _operationResult = MutableStateFlow<OperationResult?>(null)
     val operationResult: StateFlow<OperationResult?> = _operationResult
+    
+    // État pour savoir si un dossier de sauvegarde a été défini
+    private val _hasSAFDirectory = MutableStateFlow(false)
+    val hasSAFDirectory: StateFlow<Boolean> = _hasSAFDirectory
     
     init {
         // Collecter les activités terminées (toutes)
@@ -50,6 +54,30 @@ class EditViewModel(private val repository: ActivityRepository) : ViewModel() {
         
         // Collecter les activités du jour sélectionné
         refreshDailyActivities()
+    }
+    
+    /**
+     * Vérifie si un dossier de sauvegarde SAF a été défini
+     */
+    fun checkSAFDirectory(context: Context) {
+        viewModelScope.launch {
+            val safBackupHelper = SAFBackupHelper(context, repository)
+            _hasSAFDirectory.value = safBackupHelper.hasBackupDirectory()
+        }
+    }
+    
+    /**
+     * Définit le dossier de sauvegarde SAF
+     */
+    fun setBackupDirectoryUri(context: Context, uri: Uri) {
+        viewModelScope.launch {
+            val safBackupHelper = SAFBackupHelper(context, repository)
+            safBackupHelper.setBackupDirectoryUri(uri)
+            _hasSAFDirectory.value = true
+            
+            // Rafraîchir la liste des sauvegardes
+            refreshSAFBackupsList(context)
+        }
     }
     
     /**
@@ -184,16 +212,25 @@ class EditViewModel(private val repository: ActivityRepository) : ViewModel() {
     }
     
     /**
-     * Sauvegarde la base de données
-     * (Version JSON)
+     * Sauvegarde la base de données via SAF
      */
-    fun backupDatabase(context: Context, backupName: String = "") {
+    fun backupDatabaseSAF(context: Context, backupName: String = "") {
         viewModelScope.launch {
             try {
-                val backupHelper = DatabaseBackupHelper(context, repository)
-                val backupPath = backupHelper.exportToJson(backupName)
+                val safBackupHelper = SAFBackupHelper(context, repository)
                 
-                val success = backupPath != null
+                if (!safBackupHelper.hasBackupDirectory()) {
+                    _operationResult.value = OperationResult(
+                        success = false,
+                        isBackup = true,
+                        message = "Aucun dossier de sauvegarde sélectionné"
+                    )
+                    return@launch
+                }
+                
+                val backupUri = safBackupHelper.exportToJson(backupName)
+                
+                val success = backupUri != null
                 _operationResult.value = OperationResult(
                     success = success,
                     isBackup = true,
@@ -201,9 +238,9 @@ class EditViewModel(private val repository: ActivityRepository) : ViewModel() {
                 )
                 
                 // Rafraîchir la liste des sauvegardes
-                refreshBackupsList(context)
+                refreshSAFBackupsList(context)
             } catch (e: Exception) {
-                Log.e("EditViewModel", "Erreur lors de la sauvegarde", e)
+                Log.e("EditViewModel", "Erreur lors de la sauvegarde SAF", e)
                 _operationResult.value = OperationResult(
                     success = false,
                     isBackup = true,
@@ -214,14 +251,13 @@ class EditViewModel(private val repository: ActivityRepository) : ViewModel() {
     }
     
     /**
-     * Restaure la base de données à partir d'une sauvegarde
-     * (Version JSON)
+     * Restaure la base de données à partir d'une sauvegarde via SAF
      */
-    fun restoreDatabase(context: Context, backupFilePath: String) {
+    fun restoreDatabaseSAF(context: Context, uri: Uri) {
         viewModelScope.launch {
             try {
-                val backupHelper = DatabaseBackupHelper(context, repository)
-                val success = backupHelper.importFromJson(backupFilePath)
+                val safBackupHelper = SAFBackupHelper(context, repository)
+                val success = safBackupHelper.importFromJson(uri)
                 
                 _operationResult.value = OperationResult(
                     success = success,
@@ -235,7 +271,7 @@ class EditViewModel(private val repository: ActivityRepository) : ViewModel() {
                 // Émettre un événement global pour informer l'application
                 AppEvents.emitDatabaseRestored(true)
             } catch (e: Exception) {
-                Log.e("EditViewModel", "Erreur lors de la restauration", e)
+                Log.e("EditViewModel", "Erreur lors de la restauration SAF", e)
                 _operationResult.value = OperationResult(
                     success = false,
                     isBackup = false,
@@ -249,26 +285,41 @@ class EditViewModel(private val repository: ActivityRepository) : ViewModel() {
     }
     
     /**
-     * Supprime une sauvegarde
+     * Supprime une sauvegarde via SAF
      */
-    fun deleteBackup(context: Context, backupFilePath: String) {
+    fun deleteBackupSAF(context: Context, uri: Uri) {
         viewModelScope.launch {
-            val backupHelper = DatabaseBackupHelper(context, repository)
-            val success = backupHelper.deleteBackup(backupFilePath)
-            if (success) {
-                // Rafraîchir la liste des sauvegardes
-                refreshBackupsList(context)
+            try {
+                val safBackupHelper = SAFBackupHelper(context, repository)
+                val success = safBackupHelper.deleteBackup(uri)
+                
+                if (success) {
+                    // Rafraîchir la liste des sauvegardes
+                    refreshSAFBackupsList(context)
+                }
+            } catch (e: Exception) {
+                Log.e("EditViewModel", "Erreur lors de la suppression de sauvegarde SAF", e)
+                _operationResult.value = OperationResult(
+                    success = false,
+                    isBackup = true,
+                    message = "Erreur lors de la suppression: ${e.localizedMessage}"
+                )
             }
         }
     }
     
     /**
-     * Actualise la liste des sauvegardes disponibles
+     * Actualise la liste des sauvegardes SAF disponibles
      */
-    fun refreshBackupsList(context: Context) {
+    fun refreshSAFBackupsList(context: Context) {
         viewModelScope.launch {
-            val backupHelper = DatabaseBackupHelper(context, repository)
-            _backups.value = backupHelper.listBackups()
+            try {
+                val safBackupHelper = SAFBackupHelper(context, repository)
+                _backups.value = safBackupHelper.listBackups()
+            } catch (e: Exception) {
+                Log.e("EditViewModel", "Erreur lors du rafraîchissement des sauvegardes SAF", e)
+                _backups.value = emptyList()
+            }
         }
     }
     
