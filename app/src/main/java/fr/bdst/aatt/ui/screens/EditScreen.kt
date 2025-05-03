@@ -585,18 +585,47 @@ fun ActivityItem(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Type d'activité (centré et en majuscules)
-            Text(
-                text = when (activity.type) {
-                    ActivityType.VS -> "VISITE SEMESTRIELLE"
-                    ActivityType.ROUTE -> "ROUTE"
-                    ActivityType.DOMICILE -> "DOMICILE"
-                    ActivityType.PAUSE -> "PAUSE"
-                    ActivityType.DEPLACEMENT -> "DÉPLACEMENT"
-                },
-                style = MaterialTheme.typography.titleLarge, // Texte plus grand
-                textAlign = TextAlign.Center
-            )
+            // Ligne avec titre et boutons d'action
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Bouton Réactiver (icône uniquement)
+                IconButton(
+                    onClick = onReactivate,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Réactiver"
+                    )
+                }
+                
+                // Type d'activité (centré et en majuscules)
+                Text(
+                    text = when (activity.type) {
+                        ActivityType.VS -> "TRAVAIL"
+                        ActivityType.ROUTE -> "ROUTE"
+                        ActivityType.DOMICILE -> "DOMICILE"
+                        ActivityType.PAUSE -> "PAUSE"
+                        ActivityType.DEPLACEMENT -> "DÉPLACEMENT"
+                    },
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center
+                )
+                
+                // Bouton Supprimer (icône uniquement)
+                IconButton(
+                    onClick = { showDeleteConfirmDialog = true },
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Supprimer"
+                    )
+                }
+            }
             
             Spacer(modifier = Modifier.height(4.dp)) // Réduit
             
@@ -689,48 +718,6 @@ fun ActivityItem(
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp, vertical = 4.dp) // Padding vertical réduit
                 )
-            }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            // Boutons d'action - Format corrigé, plus compact
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                // Bouton Réactiver (format compact)
-                TextButton(
-                    onClick = onReactivate,
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "Réactiver",
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Réactiver",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-                
-                // Bouton Supprimer (format compact)
-                TextButton(
-                    onClick = { showDeleteConfirmDialog = true },
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Supprimer",
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Supprimer",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
             }
         }
     }
