@@ -24,7 +24,7 @@ fun StatsScreen(
     )
     
     // États pour suivre l'onglet sélectionné
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var selectedTabIndex by remember { mutableIntStateOf(1) } // Modifié de 0 à 1 pour sélectionner l'onglet "Semaine" par défaut
     val tabTitles = listOf("Jour", "Semaine", "Mois")
     
     // Collecte des états du ViewModel
