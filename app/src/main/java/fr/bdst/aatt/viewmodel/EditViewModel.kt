@@ -128,6 +128,19 @@ class EditViewModel(private val repository: ActivityRepository) : ViewModel() {
     }
     
     /**
+     * Met à jour à la fois la date/heure de début et de fin d'une activité en une seule opération
+     */
+    fun updateStartAndEndTime(activityId: Long, startTime: Long, endTime: Long?) {
+        viewModelScope.launch {
+            val activity = repository.getActivityById(activityId)
+            activity?.let {
+                val updated = it.copy(startTime = startTime, endTime = endTime)
+                repository.updateActivity(updated)
+            }
+        }
+    }
+    
+    /**
      * Supprime une activité
      */
     fun deleteActivity(activityId: Long) {

@@ -222,7 +222,10 @@ fun EditScreen(
                                 onDelete = { viewModel.deleteActivity(activity.id) },
                                 onReactivate = { viewModel.reactivateActivity(activity.id) },
                                 onEditStartTime = { newTime -> viewModel.updateStartTime(activity.id, newTime) },
-                                onEditEndTime = { newTime -> viewModel.updateEndTime(activity.id, newTime) }
+                                onEditEndTime = { newTime -> viewModel.updateEndTime(activity.id, newTime) },
+                                onEditBothTimes = { newStartTime, newEndTime -> 
+                                    viewModel.updateStartAndEndTime(activity.id, newStartTime, newEndTime)
+                                }
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                         }
@@ -499,7 +502,8 @@ fun ActivityItem(
     onDelete: () -> Unit,
     onReactivate: () -> Unit,
     onEditStartTime: (Long) -> Unit,
-    onEditEndTime: (Long) -> Unit
+    onEditEndTime: (Long) -> Unit,
+    onEditBothTimes: (Long, Long) -> Unit = { _, _ -> } // Nouveau callback pour éditer les deux valeurs
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
@@ -704,6 +708,11 @@ fun ActivityItem(
             onEditEndTime = { newTime -> 
                 onEditEndTime(newTime)
                 showEditDialog = false 
+            },
+            // Nouveau callback qui utilise la fonction updateStartAndEndTime
+            onEditBothTimes = { newStartTime, newEndTime ->
+                onEditBothTimes(newStartTime, newEndTime)
+                showEditDialog = false
             }
         )
     }

@@ -36,7 +36,8 @@ fun ActivityEditDialog(
     activity: Activity,
     onDismiss: () -> Unit,
     onEditStartTime: (Long) -> Unit,
-    onEditEndTime: (Long) -> Unit
+    onEditEndTime: (Long) -> Unit,
+    onEditBothTimes: (Long, Long) -> Unit = { _, _ -> } // Nouveau callback pour éditer les deux valeurs
 ) {
     // États pour savoir ce qu'on est en train d'éditer
     var editingStart by remember { mutableStateOf(true) } // true = début, false = fin
@@ -114,12 +115,12 @@ fun ActivityEditDialog(
     
     // Pour sauvegarder les modifications
     fun saveChanges() {
-        // Sauvegarder toujours les modifications de l'heure de début
-        onEditStartTime(startCalendar.timeInMillis)
-        
-        // Sauvegarder les modifications de l'heure de fin uniquement si l'activité a une fin
+        // Si l'activité a une fin, sauvegarder les deux valeurs en une seule opération
         if (activity.endTime != null) {
-            onEditEndTime(endCalendar.timeInMillis)
+            onEditBothTimes(startCalendar.timeInMillis, endCalendar.timeInMillis)
+        } else {
+            // Si l'activité est en cours, on ne peut modifier que l'heure de début
+            onEditStartTime(startCalendar.timeInMillis)
         }
     }
     
@@ -485,6 +486,8 @@ fun ActivityEditDialog(
                                                                 selectedDay = dayNumber
                                                                 selectedMonth = displayedMonth
                                                                 selectedYear = displayedYear
+                                                                // Appliquer immédiatement les changements
+                                                                applyCurrentChanges()
                                                             }
                                                             .padding(2.dp),
                                                         contentAlignment = Alignment.Center
@@ -536,6 +539,8 @@ fun ActivityEditDialog(
                                             IconButton(
                                                 onClick = { 
                                                     selectedHour = if (selectedHour > 0) selectedHour - 1 else 23
+                                                    // Appliquer immédiatement les changements
+                                                    applyCurrentChanges()
                                                 }
                                             ) {
                                                 Icon(
@@ -552,6 +557,8 @@ fun ActivityEditDialog(
                                             IconButton(
                                                 onClick = { 
                                                     selectedHour = if (selectedHour < 23) selectedHour + 1 else 0
+                                                    // Appliquer immédiatement les changements
+                                                    applyCurrentChanges()
                                                 }
                                             ) {
                                                 Icon(
@@ -581,6 +588,8 @@ fun ActivityEditDialog(
                                             IconButton(
                                                 onClick = { 
                                                     selectedMinute = if (selectedMinute > 0) selectedMinute - 1 else 59
+                                                    // Appliquer immédiatement les changements
+                                                    applyCurrentChanges()
                                                 }
                                             ) {
                                                 Icon(
@@ -597,6 +606,8 @@ fun ActivityEditDialog(
                                             IconButton(
                                                 onClick = { 
                                                     selectedMinute = if (selectedMinute < 59) selectedMinute + 1 else 0
+                                                    // Appliquer immédiatement les changements
+                                                    applyCurrentChanges()
                                                 }
                                             ) {
                                                 Icon(

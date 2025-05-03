@@ -1,7 +1,9 @@
 PS J:\DEV\Android\AATT> ./gradlew installDebug
 
 > Task :app:compileDebugKotlin FAILED
-e: file:///J:/DEV/Android/AATT/app/src/main/java/fr/bdst/aatt/ui/screens/EditScreen.kt:893:30 Unresolved reference 'alpha'.
+e: file:///J:/DEV/Android/AATT/app/src/main/java/fr/bdst/aatt/ui/screens/EditScreen.kt:703:21 Unresolved reference 'viewModel'.
+e: file:///J:/DEV/Android/AATT/app/src/main/java/fr/bdst/aatt/ui/screens/EditScreen.kt:705:21 Unresolved reference 'viewModel'.
+e: file:///J:/DEV/Android/AATT/app/src/main/java/fr/bdst/aatt/ui/screens/EditScreen.kt:711:17 Unresolved reference 'viewModel'.
 
 FAILURE: Build failed with an exception.
 
@@ -22,6 +24,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD FAILED in 3s
+BUILD FAILED in 2s
 30 actionable tasks: 1 executed, 29 up-to-date
 PS J:\DEV\Android\AATT> 
