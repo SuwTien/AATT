@@ -225,7 +225,8 @@ fun EditScreen(
                                 onEditEndTime = { newTime -> viewModel.updateEndTime(activity.id, newTime) },
                                 onEditBothTimes = { newStartTime, newEndTime -> 
                                     viewModel.updateStartAndEndTime(activity.id, newStartTime, newEndTime)
-                                }
+                                },
+                                viewModel = viewModel
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                         }
@@ -503,7 +504,8 @@ fun ActivityItem(
     onReactivate: () -> Unit,
     onEditStartTime: (Long) -> Unit,
     onEditEndTime: (Long) -> Unit,
-    onEditBothTimes: (Long, Long) -> Unit = { _, _ -> } // Nouveau callback pour éditer les deux valeurs
+    onEditBothTimes: (Long, Long) -> Unit = { _, _ -> }, // Nouveau callback pour éditer les deux valeurs
+    viewModel: EditViewModel? = null // Ajout du viewModel pour pouvoir rafraîchir les activités
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
@@ -703,16 +705,18 @@ fun ActivityItem(
             onDismiss = { showEditDialog = false },
             onEditStartTime = { newTime -> 
                 onEditStartTime(newTime)
-                showEditDialog = false 
+                showEditDialog = false
+                viewModel?.refreshActivitiesForCurrentDay() // Rafraîchir après l'édition
             },
             onEditEndTime = { newTime -> 
                 onEditEndTime(newTime)
-                showEditDialog = false 
+                showEditDialog = false
+                viewModel?.refreshActivitiesForCurrentDay() // Rafraîchir après l'édition
             },
-            // Nouveau callback qui utilise la fonction updateStartAndEndTime
             onEditBothTimes = { newStartTime, newEndTime ->
                 onEditBothTimes(newStartTime, newEndTime)
                 showEditDialog = false
+                viewModel?.refreshActivitiesForCurrentDay() // Rafraîchir après l'édition
             }
         )
     }

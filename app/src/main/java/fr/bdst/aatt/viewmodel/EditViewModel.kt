@@ -64,6 +64,14 @@ class EditViewModel(private val repository: ActivityRepository) : ViewModel() {
     }
     
     /**
+     * Rafraîchit la liste des activités pour le jour sélectionné
+     * Cette méthode publique permet de forcer le rafraîchissement depuis l'UI
+     */
+    fun refreshActivitiesForCurrentDay() {
+        refreshDailyActivities()
+    }
+    
+    /**
      * Passe au jour suivant
      */
     fun navigateToNextDay() {
