@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
@@ -38,6 +39,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var mainViewModel: MainViewModel
     private lateinit var editViewModel: EditViewModel
     
+    // État pour contrôler l'affichage de l'écran de démarrage
+    private var isAppReady = false
+    
     // Gestionnaire de demande de permissions
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -53,8 +57,14 @@ class MainActivity : ComponentActivity() {
     }
     
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Installer l'écran de démarrage avant d'appeler super.onCreate()
+        val splashScreen = installSplashScreen()
+        
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        // Maintenir l'écran de démarrage visible jusqu'à ce que l'app soit prête
+        splashScreen.setKeepOnScreenCondition { !isAppReady }
         
         // Vérifier et demander les permissions au démarrage
         checkAndRequestPermissions()
@@ -168,6 +178,9 @@ class MainActivity : ComponentActivity() {
         
         // Configurer l'interface
         setAppContent()
+        
+        // Indiquer que l'application est prête à être affichée
+        isAppReady = true
     }
     
     /**

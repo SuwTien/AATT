@@ -56,6 +56,10 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation("androidx.appcompat:appcompat:1.6.1") // Ajout pour SplashActivity
+    
+    // Splash Screen API
+    implementation("androidx.core:core-splashscreen:1.0.1")
     
     // DocumentFile pour le Storage Access Framework (SAF)
     implementation("androidx.documentfile:documentfile:1.0.1")

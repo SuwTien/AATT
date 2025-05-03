@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <style name="Theme.AATT" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Thème pour l'écran de démarrage avec l'image AATT -->
+    <style name="Theme.AATT.SplashScreen" parent="Theme.SplashScreen">
+        <!-- Utiliser l'image comme icône centrale -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_image</item>
+        
+        <!-- Couleur de l'arrière-plan -->
+        <item name="windowSplashScreenBackground">@color/white</item>
+        
+        <!-- Durée d'animation (par défaut 1000ms) -->
+        <item name="windowSplashScreenAnimationDuration">800</item>
+        
+        <!-- Thème qui sera utilisé une fois l'animation terminée -->
+        <item name="postSplashScreenTheme">@style/Theme.AATT</item>
+    </style>
 </resources>
