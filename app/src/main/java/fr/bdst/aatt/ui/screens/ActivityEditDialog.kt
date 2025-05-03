@@ -55,7 +55,6 @@ fun NumberPickerWheel(
     onValueChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
     range: IntRange,
-    label: String,
     formatNumber: (Int) -> String = { it.toString().padStart(2, '0') }
 ) {
     // État pour suivre la valeur actuelle du scroll
@@ -127,123 +126,112 @@ fun NumberPickerWheel(
         animatedOffset.value
     }
     
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = modifier.width(IntrinsicSize.Min)
+    // Zone de défilement avec effet visuel
+    Box(
+        modifier = modifier
+            .height(140.dp) // Plus haut pour les chiffres plus grands
+            .width(70.dp)   // Plus large pour les chiffres plus grands
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        
-        // Zone de défilement avec effet visuel
+        // Indicateur de sélection (la zone sélectionnée)
         Box(
             modifier = Modifier
-                .height(120.dp)
-                .width(60.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+                .height(60.dp) // Plus haut pour les chiffres plus grands
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                .zIndex(1f)
+        )
+        
+        // Les valeurs visibles avec positionnement dynamique
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .scrollable(
+                    orientation = Orientation.Vertical,
+                    state = scrollState
+                ),
             contentAlignment = Alignment.Center
         ) {
-            // Indicateur de sélection (la zone sélectionnée)
-            Box(
-                modifier = Modifier
-                    .height(50.dp)
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-                    .zIndex(1f)
+            // Valeur principale (sélectionnée)
+            Text(
+                text = formatNumber(value),
+                style = MaterialTheme.typography.headlineLarge, // Plus grand (headlineLarge)
+                fontWeight = FontWeight.Bold,
+                fontSize = 34.sp, // Taille de police plus grande
+                modifier = Modifier.offset { IntOffset(0, currentOffset.roundToInt()) }
             )
             
-            // Les valeurs visibles avec positionnement dynamique
-            Box(
+            // Valeur au-dessus +1
+            Text(
+                text = formatNumber(valueAbove1),
+                style = MaterialTheme.typography.headlineSmall, // Plus grand (headlineSmall)
                 modifier = Modifier
-                    .fillMaxSize()
-                    .scrollable(
-                        orientation = Orientation.Vertical,
-                        state = scrollState
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                // Valeur principale (sélectionnée)
-                Text(
-                    text = formatNumber(value),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.offset { IntOffset(0, currentOffset.roundToInt()) }
-                )
-                
-                // Valeur au-dessus +1
-                Text(
-                    text = formatNumber(valueAbove1),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier
-                        .offset { IntOffset(0, (-itemHeight + currentOffset).roundToInt()) }
-                        .alpha(0.6f)
-                )
-                
-                // Valeur au-dessus +2
-                Text(
-                    text = formatNumber(valueAbove2),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier
-                        .offset { IntOffset(0, ((-itemHeight * 2) + currentOffset).roundToInt()) }
-                        .alpha(0.3f)
-                )
-                
-                // Valeur en-dessous -1
-                Text(
-                    text = formatNumber(valueBelow1),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier
-                        .offset { IntOffset(0, (itemHeight + currentOffset).roundToInt()) }
-                        .alpha(0.6f)
-                )
-                
-                // Valeur en-dessous -2
-                Text(
-                    text = formatNumber(valueBelow2),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier
-                        .offset { IntOffset(0, ((itemHeight * 2) + currentOffset).roundToInt()) }
-                        .alpha(0.3f)
-                )
-            }
-            
-            // Ajout de dégradés pour donner un effet "évanescence" en haut et en bas
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(30.dp)
-                    .align(Alignment.TopCenter)
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.surfaceVariant,
-                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0f)
-                            )
-                        )
-                    )
-                    .zIndex(2f)
+                    .offset { IntOffset(0, (-itemHeight + currentOffset).roundToInt()) }
+                    .alpha(0.6f)
             )
             
-            Box(
+            // Valeur au-dessus +2
+            Text(
+                text = formatNumber(valueAbove2),
+                style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(30.dp)
-                    .align(Alignment.BottomCenter)
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0f),
-                                MaterialTheme.colorScheme.surfaceVariant
-                            )
-                        )
-                    )
-                    .zIndex(2f)
+                    .offset { IntOffset(0, ((-itemHeight * 2) + currentOffset).roundToInt()) }
+                    .alpha(0.3f)
+            )
+            
+            // Valeur en-dessous -1
+            Text(
+                text = formatNumber(valueBelow1),
+                style = MaterialTheme.typography.headlineSmall, // Plus grand (headlineSmall)
+                modifier = Modifier
+                    .offset { IntOffset(0, (itemHeight + currentOffset).roundToInt()) }
+                    .alpha(0.6f)
+            )
+            
+            // Valeur en-dessous -2
+            Text(
+                text = formatNumber(valueBelow2),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .offset { IntOffset(0, ((itemHeight * 2) + currentOffset).roundToInt()) }
+                    .alpha(0.3f)
             )
         }
+        
+        // Ajout de dégradés pour donner un effet "évanescence" en haut et en bas
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(40.dp)
+                .align(Alignment.TopCenter)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.surfaceVariant,
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0f)
+                        )
+                    )
+                )
+                .zIndex(2f)
+        )
+        
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(40.dp)
+                .align(Alignment.BottomCenter)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0f),
+                            MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    )
+                )
+                .zIndex(2f)
+        )
     }
 }
 
@@ -754,8 +742,7 @@ fun ActivityEditDialog(
                                             selectedHour = it
                                             applyCurrentChanges()
                                         },
-                                        range = 0..23,
-                                        label = "Heure"
+                                        range = 0..23
                                     )
                                     
                                     // Séparateur
@@ -774,8 +761,7 @@ fun ActivityEditDialog(
                                             selectedMinute = it
                                             applyCurrentChanges()
                                         },
-                                        range = 0..59,
-                                        label = "Minute"
+                                        range = 0..59
                                     )
                                 }
                             }
