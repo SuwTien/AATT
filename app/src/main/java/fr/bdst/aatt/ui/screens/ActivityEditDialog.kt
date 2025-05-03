@@ -2,6 +2,7 @@ package fr.bdst.aatt.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,6 +10,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,15 +20,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import fr.bdst.aatt.data.model.Activity
 import fr.bdst.aatt.data.model.ActivityType
 import fr.bdst.aatt.data.util.StatisticsCalculator
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.abs
 
 /**
  * Boîte de dialogue pour éditer les heures de début et de fin d'une activité
@@ -515,7 +521,7 @@ fun ActivityEditDialog(
                                 }
                             }
                         } else {
-                            // Sélecteur d'heure (horloge simplifiée)
+                            // Sélecteur d'heure (horloge simplifiée) avec orientation verticale et gestes de glissement
                             Column(
                                 modifier = Modifier.fillMaxSize(),
                                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -527,45 +533,74 @@ fun ActivityEditDialog(
                                     horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    // Sélecteur d'heure (0-23)
+                                    // Sélecteur d'heure (0-23) - Version améliorée avec flèches verticales
                                     Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center,
+                                        modifier = Modifier.padding(horizontal = 8.dp)
                                     ) {
                                         Text("Heure", style = MaterialTheme.typography.bodyMedium)
                                         Spacer(modifier = Modifier.height(4.dp))
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically
+                                        
+                                        // Flèche vers le haut
+                                        IconButton(
+                                            onClick = { 
+                                                selectedHour = if (selectedHour < 23) selectedHour + 1 else 0
+                                                applyCurrentChanges()
+                                            },
+                                            modifier = Modifier.size(40.dp)
                                         ) {
-                                            IconButton(
-                                                onClick = { 
-                                                    selectedHour = if (selectedHour > 0) selectedHour - 1 else 23
-                                                    // Appliquer immédiatement les changements
-                                                    applyCurrentChanges()
+                                            Icon(
+                                                imageVector = Icons.Default.KeyboardArrowUp,
+                                                contentDescription = "Heure suivante",
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                        
+                                        // Valeur avec geste de glissement
+                                        Box(
+                                            contentAlignment = Alignment.Center,
+                                            modifier = Modifier
+                                                .padding(vertical = 8.dp)
+                                                .size(60.dp, 50.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                                .pointerInput(Unit) {
+                                                    detectVerticalDragGestures { _, dragAmount ->
+                                                        when {
+                                                            dragAmount < -16 -> { // Seuil augmenté de -2 à -8 pour réduire la sensibilité
+                                                                selectedHour = if (selectedHour < 23) selectedHour + 1 else 0
+                                                                applyCurrentChanges()
+                                                            }
+                                                            dragAmount > 16 -> { // Seuil augmenté de 2 à 8 pour réduire la sensibilité
+                                                                selectedHour = if (selectedHour > 0) selectedHour - 1 else 23
+                                                                applyCurrentChanges()
+                                                            }
+                                                        }
+                                                    }
                                                 }
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                                                    contentDescription = "Heure précédente"
-                                                )
-                                            }
-                                            
+                                        ) {
                                             Text(
                                                 text = selectedHour.toString().padStart(2, '0'),
-                                                style = MaterialTheme.typography.headlineMedium
+                                                style = MaterialTheme.typography.headlineMedium,
+                                                fontSize = 28.sp,
+                                                fontWeight = FontWeight.Bold
                                             )
-                                            
-                                            IconButton(
-                                                onClick = { 
-                                                    selectedHour = if (selectedHour < 23) selectedHour + 1 else 0
-                                                    // Appliquer immédiatement les changements
-                                                    applyCurrentChanges()
-                                                }
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                                    contentDescription = "Heure suivante"
-                                                )
-                                            }
+                                        }
+                                        
+                                        // Flèche vers le bas
+                                        IconButton(
+                                            onClick = { 
+                                                selectedHour = if (selectedHour > 0) selectedHour - 1 else 23
+                                                applyCurrentChanges()
+                                            },
+                                            modifier = Modifier.size(40.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.KeyboardArrowDown,
+                                                contentDescription = "Heure précédente",
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
                                         }
                                     }
                                     
@@ -573,48 +608,79 @@ fun ActivityEditDialog(
                                     Text(
                                         text = ":",
                                         style = MaterialTheme.typography.headlineMedium,
+                                        fontSize = 28.sp,
+                                        fontWeight = FontWeight.Bold,
                                         modifier = Modifier.padding(horizontal = 8.dp)
                                     )
                                     
-                                    // Sélecteur de minutes (0-59)
+                                    // Sélecteur de minutes (0-59) - Version améliorée avec flèches verticales
                                     Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center,
+                                        modifier = Modifier.padding(horizontal = 8.dp)
                                     ) {
                                         Text("Minute", style = MaterialTheme.typography.bodyMedium)
                                         Spacer(modifier = Modifier.height(4.dp))
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically
+                                        
+                                        // Flèche vers le haut
+                                        IconButton(
+                                            onClick = { 
+                                                selectedMinute = if (selectedMinute < 59) selectedMinute + 1 else 0
+                                                applyCurrentChanges()
+                                            },
+                                            modifier = Modifier.size(40.dp)
                                         ) {
-                                            IconButton(
-                                                onClick = { 
-                                                    selectedMinute = if (selectedMinute > 0) selectedMinute - 1 else 59
-                                                    // Appliquer immédiatement les changements
-                                                    applyCurrentChanges()
+                                            Icon(
+                                                imageVector = Icons.Default.KeyboardArrowUp,
+                                                contentDescription = "Minute suivante",
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                        
+                                        // Valeur avec geste de glissement
+                                        Box(
+                                            contentAlignment = Alignment.Center,
+                                            modifier = Modifier
+                                                .padding(vertical = 8.dp)
+                                                .size(60.dp, 50.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                                .pointerInput(Unit) {
+                                                    detectVerticalDragGestures { _, dragAmount ->
+                                                        when {
+                                                            dragAmount < -8 -> { // Seuil augmenté de -2 à -8 pour réduire la sensibilité
+                                                                selectedMinute = if (selectedMinute < 59) selectedMinute + 1 else 0
+                                                                applyCurrentChanges()
+                                                            }
+                                                            dragAmount > 8 -> { // Seuil augmenté de 2 à 8 pour réduire la sensibilité
+                                                                selectedMinute = if (selectedMinute > 0) selectedMinute - 1 else 59
+                                                                applyCurrentChanges()
+                                                            }
+                                                        }
+                                                    }
                                                 }
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                                                    contentDescription = "Minute précédente"
-                                                )
-                                            }
-                                            
+                                        ) {
                                             Text(
                                                 text = selectedMinute.toString().padStart(2, '0'),
-                                                style = MaterialTheme.typography.headlineMedium
+                                                style = MaterialTheme.typography.headlineMedium,
+                                                fontSize = 28.sp,
+                                                fontWeight = FontWeight.Bold
                                             )
-                                            
-                                            IconButton(
-                                                onClick = { 
-                                                    selectedMinute = if (selectedMinute < 59) selectedMinute + 1 else 0
-                                                    // Appliquer immédiatement les changements
-                                                    applyCurrentChanges()
-                                                }
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                                    contentDescription = "Minute suivante"
-                                                )
-                                            }
+                                        }
+                                        
+                                        // Flèche vers le bas
+                                        IconButton(
+                                            onClick = { 
+                                                selectedMinute = if (selectedMinute > 0) selectedMinute - 1 else 59
+                                                applyCurrentChanges()
+                                            },
+                                            modifier = Modifier.size(40.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.KeyboardArrowDown,
+                                                contentDescription = "Minute précédente",
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
                                         }
                                     }
                                 }
