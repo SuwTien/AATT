@@ -659,15 +659,16 @@ fun ActivityEditDialog(
                                 
                                 // Afficher les semaines dans le mois
                                 Column(
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 2.dp) // Réduction des marges horizontales
                                 ) {
-                                    // Utiliser un LazyVerticalGrid ici cause le problème de chevauchement
                                     // On le remplace par des Row dans une Column
                                     for (row in 0 until numRows) {
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .height(24.dp), // Hauteur fixe pour chaque ligne
+                                                .height(26.dp), // Augmenté légèrement la hauteur de chaque ligne
                                             horizontalArrangement = Arrangement.SpaceEvenly
                                         ) {
                                             for (col in 0 until 7) {
@@ -682,6 +683,8 @@ fun ActivityEditDialog(
                                                     Box(
                                                         modifier = Modifier
                                                             .weight(1f)
+                                                            .fillMaxHeight()
+                                                            .padding(horizontal = 2.dp, vertical = 1.dp) // Réduction des marges
                                                             .aspectRatio(1f)
                                                             .clip(CircleShape)
                                                             .background(
@@ -696,13 +699,12 @@ fun ActivityEditDialog(
                                                                 selectedYear = displayedYear
                                                                 // Appliquer immédiatement les changements
                                                                 applyCurrentChanges()
-                                                            }
-                                                            .padding(2.dp),
+                                                            },
                                                         contentAlignment = Alignment.Center
                                                     ) {
                                                         Text(
                                                             text = dayNumber.toString(),
-                                                            style = MaterialTheme.typography.bodyMedium,
+                                                            style = MaterialTheme.typography.bodySmall, // Légèrement plus petit
                                                             color = if (isSelected) 
                                                                 MaterialTheme.colorScheme.onPrimary 
                                                             else 
