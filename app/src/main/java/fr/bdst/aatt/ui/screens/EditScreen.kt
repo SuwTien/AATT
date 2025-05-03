@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -831,61 +832,114 @@ fun ActivityEditDialog(
                         .padding(vertical = 8.dp)
                 )
                 
-                // Boutons Début / Fin - padding réduit
+                // Zone cliquable pour afficher/modifier les dates de début et fin
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp) // Réduit de 8dp à 4dp
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Bouton Début
+                    // Colonne Début - cliquable
                     Column(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { editingStart = true },
+                            .clickable { editingStart = true }
+                            .padding(vertical = 8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        // Titre avec indicateur visuel
                         Text(
                             text = "Début",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = if (editingStart) FontWeight.Bold else FontWeight.Normal,
                             color = if (editingStart) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
+                        
                         // Indicateur de sélection
-                        HorizontalDivider(
-                            modifier = Modifier.width(40.dp),
-                            thickness = 2.dp,
-                            color = if (editingStart) MaterialTheme.colorScheme.primary else Color.Transparent
+                        Box(
+                            modifier = Modifier
+                                .padding(vertical = 2.dp)
+                                .width(40.dp)
+                                .height(2.dp)
+                                .background(if (editingStart) MaterialTheme.colorScheme.primary else Color.Transparent)
+                        )
+                        
+                        Text(
+                            text = dateFormat.format(startCalendar.time),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (editingStart) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = timeFormat.format(startCalendar.time),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = if (editingStart) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                         )
                     }
                     
-                    // Bouton Fin
+                    // Séparateur vertical
+                    VerticalDivider(
+                        modifier = Modifier
+                            .height(70.dp)
+                            .padding(horizontal = 8.dp),
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                    )
+                    
+                    // Colonne Fin - cliquable seulement si l'activité est terminée
                     Column(
                         modifier = Modifier
                             .weight(1f)
                             .clickable(enabled = activity.endTime != null) { 
                                 if (activity.endTime != null) editingStart = false 
-                            },
+                            }
+                            .padding(vertical = 8.dp)
+                            .graphicsLayer(alpha = if (activity.endTime == null) 0.6f else 1f),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        // Titre avec indicateur visuel
                         Text(
                             text = if (activity.endTime != null) "Fin" else "En cours",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = if (!editingStart) FontWeight.Bold else FontWeight.Normal,
-                            color = if (!editingStart) 
-                                MaterialTheme.colorScheme.primary
-                            else if (activity.endTime == null)
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                            else
+                            color = if (!editingStart && activity.endTime != null) 
+                                MaterialTheme.colorScheme.primary 
+                            else 
                                 MaterialTheme.colorScheme.onSurface
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
+                        
                         // Indicateur de sélection
-                        HorizontalDivider(
-                            modifier = Modifier.width(40.dp),
-                            thickness = 2.dp,
-                            color = if (!editingStart) MaterialTheme.colorScheme.primary else Color.Transparent
+                        Box(
+                            modifier = Modifier
+                                .padding(vertical = 2.dp)
+                                .width(40.dp)
+                                .height(2.dp)
+                                .background(
+                                    if (!editingStart && activity.endTime != null) 
+                                        MaterialTheme.colorScheme.primary 
+                                    else 
+                                        Color.Transparent
+                                )
                         )
+                        
+                        if (activity.endTime != null) {
+                            Text(
+                                text = dateFormat.format(endCalendar.time),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (!editingStart) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = timeFormat.format(endCalendar.time),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = if (!editingStart) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                        } else {
+                            Text(
+                                text = "---",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = "---",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
                     }
                 }
                 
@@ -1220,88 +1274,6 @@ fun ActivityEditDialog(
                                     }
                                 }
                             }
-                        }
-                    }
-                }
-                
-                // Spacer réduit
-                Spacer(modifier = Modifier.height(8.dp)) // Réduit de 16dp à 8dp
-                
-                // Affichage des deux colonnes Début / Fin - hauteur optimisée
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    // Colonne Début
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 4.dp, vertical = 2.dp), // Réduit
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Début",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = if (editingStart) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.height(2.dp)) // Réduit de 4dp à 2dp
-                        Text(
-                            text = dateFormat.format(startCalendar.time),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Spacer(modifier = Modifier.height(1.dp)) // Réduit de 2dp à 1dp
-                        Text(
-                            text = timeFormat.format(startCalendar.time),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
-                    
-                    // Séparateur vertical - hauteur réduite
-                    VerticalDivider(
-                        modifier = Modifier
-                            .height(70.dp) // Réduit de 80dp à 70dp
-                            .padding(horizontal = 8.dp),
-                        thickness = 1.dp,
-                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                    )
-                    
-                    // Colonne Fin
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 4.dp, vertical = 2.dp), // Réduit
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Fin",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = if (!editingStart) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.height(2.dp)) // Réduit de 4dp à 2dp
-                        if (activity.endTime != null) {
-                            Text(
-                                text = dateFormat.format(endCalendar.time),
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Spacer(modifier = Modifier.height(1.dp)) // Réduit de 2dp à 1dp
-                            Text(
-                                text = timeFormat.format(endCalendar.time),
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        } else {
-                            Text(
-                                text = "En cours",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                            )
-                            Spacer(modifier = Modifier.height(1.dp)) // Réduit de 2dp à 1dp
-                            Text(
-                                text = "---",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                            )
                         }
                     }
                 }
