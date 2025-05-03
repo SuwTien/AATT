@@ -166,6 +166,15 @@ Cette planification permettra de développer les écrans statistiques de manièr
 
 ## Journal des modifications
 
+### 2025-05-03
+- Finalisation des améliorations visuelles des statistiques hebdomadaires :
+  - Ajout d'un fond coloré pour les titres des jours avec centrage du texte
+  - Suppression de la date numérique des titres de jours pour une interface plus épurée
+  - Ajout d'une ligne "Total hors domicile" avant le temps de domicile pour distinguer clairement ces catégories de temps 
+  - Optimisation de l'affichage des activités avec déplacements associés ("VS + Dépl.")
+  - Mise à jour de la documentation StatisticsScreenDesign.md avec le nouveau design
+  - Mise à jour du CHANGELOG.md pour documenter les améliorations apportées
+
 ### 2025-04-29
 - Amélioration de l'interface des statistiques hebdomadaires :
   - Refonte du résumé hebdomadaire avec titre "Semaine XX" bien centré

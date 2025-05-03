@@ -1,5 +1,21 @@
 # Historique des versions - AATT (Atlantic Automatique Time Tracker)
 
+## Version de développement - 3 mai 2025
+
+### Améliorations de l'interface des statistiques hebdomadaires 📊
+
+- Optimisation de l'affichage du détail des jours :
+  - Suppression de l'en-tête "DÉTAIL PAR JOUR" et des colonnes Jour/Activités pour une interface plus épurée
+  - Amélioration visuelle des titres de jours avec un fond coloré et centrage du texte
+  - Ajout d'une ligne "Total hors domicile" pour distinguer clairement le travail sur site et à domicile
+  - Affichage simplifié des déplacements associés aux VS ("VS + Dépl.")
+
+- Impacts des modifications :
+  - Meilleure lisibilité des informations quotidiennes
+  - Distinction plus claire des différentes catégories de temps de travail
+  - Hiérarchie visuelle améliorée avec mise en évidence des jours par un bandeau coloré
+  - Interface plus compacte et mieux organisée
+
 ## Version de développement - 28 avril 2025
 
 ### Refactoring majeur du module statistiques 📊

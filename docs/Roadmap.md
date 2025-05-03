@@ -113,13 +113,14 @@
 
 ## Priorités pour la prochaine itération
 
-1. **Amélioration visuelle de l'onglet hebdomadaire - Phase 2 : Visuel des jours** 🔝
-   - Mise en évidence des jours de la semaine avec un style plus visible et hiérarchisé
-   - Ajout d'indicateurs visuels (icônes ou couleurs) pour identifier rapidement les types d'activités
-   - Organisation plus claire des activités journalières avec meilleure séparation visuelle
-   - Optimisation de l'affichage des jours sans activité (masquer ou réduire visuellement)
-   - Évaluer la possibilité d'ajouter un petit graphique par jour montrant la répartition du temps
-   - Conserver la note explicative sur la comptabilisation des déplacements
+1. **Amélioration visuelle de l'onglet hebdomadaire - Phase 2 : Visuel des jours** ✅
+   - Mise en évidence des jours de la semaine avec un style plus visible et hiérarchisé ✅
+   - Ajout d'indicateurs visuels (icônes ou couleurs) pour identifier rapidement les types d'activités ✅
+   - Organisation plus claire des activités journalières avec meilleure séparation visuelle ✅
+   - Optimisation de l'affichage des jours sans activité (masquer ou réduire visuellement) ✅
+   - ~~Évaluer la possibilité d'ajouter un petit graphique par jour montrant la répartition du temps~~ (reporté)
+   - Conserver la note explicative sur la comptabilisation des déplacements ✅
+   - Ajout d'une ligne "Total hors domicile" pour mieux distinguer les types de travail ✅
 
 2. **Calculateurs statistiques jour/semaine/mois** 
    - Finaliser l'implémentation des calculs avec les règles métier spécifiques
@@ -127,12 +128,12 @@
    - Ajouter des visualisations claires des temps par type d'activité
    - Implémenter la règle de déduction de 1h30 pour ROUTE
 
-3. **Améliorations visuelles de la page de statistiques** 🆕
+3. **Améliorations visuelles de la page de statistiques** 🔝
    - Ajouter des graphiques pour visualiser la répartition du temps
    - Améliorer l'organisation des informations pour une meilleure lisibilité
    - Utiliser des couleurs cohérentes avec les boutons d'activité
 
-4. **Documentation et tests** 🆕
+4. **Documentation et tests** 🔝
    - Ajouter des commentaires KDoc dans le code source
    - Créer des tests unitaires pour les fonctions principales
    - Documenter les cas d'utilisation principaux
