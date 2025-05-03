@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.shape.CircleShape
@@ -23,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -37,6 +39,7 @@ import androidx.compose.ui.zIndex
 import fr.bdst.aatt.data.model.Activity
 import fr.bdst.aatt.data.model.ActivityType
 import fr.bdst.aatt.data.util.StatisticsCalculator
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
@@ -44,7 +47,7 @@ import kotlin.math.roundToInt
 
 /**
  * Composant personnalisé de type "roue" pour sélectionner des nombres
- * Simule un effet de défilement circulaire des valeurs
+ * Simule un effet de défilement circulaire des valeurs avec une animation fluide
  */
 @Composable
 fun NumberPickerWheel(
@@ -55,25 +58,73 @@ fun NumberPickerWheel(
     label: String,
     formatNumber: (Int) -> String = { it.toString().padStart(2, '0') }
 ) {
+    // État pour suivre la valeur actuelle du scroll
+    val scrollOffset = remember { mutableStateOf(0f) }
+    val animatedOffset = remember { Animatable(0f) }
+    val coroutineScope = rememberCoroutineScope()
+    
     // Convertir la position actuelle en offset pour l'animation
     val density = LocalDensity.current
     val itemHeight = with(density) { 50.dp.toPx() }
     
+    // Variables pour gérer les limites du défilement
+    val minValue = range.first
+    val maxValue = range.last
+    val rangeSize = maxValue - minValue + 1
+    
+    // Seuil pour déclencher le changement de valeur
+    val dragThreshold = itemHeight * 0.5f
+    
     // État pour gérer le défilement
     val scrollState = rememberScrollableState { delta ->
-        // Calculer le nouveau décalage basé sur le mouvement
-        val scrollAmount = -delta / itemHeight
-        if (abs(scrollAmount) > 0.1f) {
-            // Calculer la nouvelle valeur
-            var newVal = value
-            if (scrollAmount > 0) {
-                newVal = if (newVal < range.last) newVal + 1 else range.first
-            } else {
-                newVal = if (newVal > range.first) newVal - 1 else range.last
-            }
-            onValueChange(newVal)
+        // Mettre à jour l'offset de défilement
+        scrollOffset.value += delta
+        
+        // Vérifier s'il faut changer la valeur sélectionnée
+        if (scrollOffset.value > dragThreshold) {
+            // Défilement vers le bas (valeur précédente)
+            val newValue = if (value > minValue) value - 1 else maxValue
+            onValueChange(newValue)
+            scrollOffset.value -= itemHeight
+        } else if (scrollOffset.value < -dragThreshold) {
+            // Défilement vers le haut (valeur suivante)
+            val newValue = if (value < maxValue) value + 1 else minValue
+            onValueChange(newValue)
+            scrollOffset.value += itemHeight
         }
+        
         delta
+    }
+    
+    // Utilisé pour animer le retour à 0 quand le doigt est relâché
+    LaunchedEffect(scrollState.isScrollInProgress) {
+        if (!scrollState.isScrollInProgress && scrollOffset.value != 0f) {
+            // Lancer une animation pour revenir à 0
+            coroutineScope.launch {
+                animatedOffset.snapTo(scrollOffset.value)
+                animatedOffset.animateTo(
+                    targetValue = 0f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                )
+                scrollOffset.value = 0f
+            }
+        }
+    }
+    
+    // Calculer les valeurs visibles (actuelle, précédente, suivante)
+    val valueAbove1 = if (value < maxValue) value + 1 else minValue
+    val valueAbove2 = if (valueAbove1 < maxValue) valueAbove1 + 1 else minValue
+    val valueBelow1 = if (value > minValue) value - 1 else maxValue
+    val valueBelow2 = if (valueBelow1 > minValue) valueBelow1 - 1 else maxValue
+    
+    // L'offset actuel pour l'animation
+    val currentOffset = if (scrollState.isScrollInProgress) {
+        scrollOffset.value
+    } else {
+        animatedOffset.value
     }
     
     Column(
@@ -105,7 +156,7 @@ fun NumberPickerWheel(
                     .zIndex(1f)
             )
             
-            // Les valeurs visibles (actuelle + 2 au-dessus et 2 en-dessous)
+            // Les valeurs visibles avec positionnement dynamique
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -120,49 +171,78 @@ fun NumberPickerWheel(
                     text = formatNumber(value),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.offset { IntOffset(0, 0) }
+                    modifier = Modifier.offset { IntOffset(0, currentOffset.roundToInt()) }
                 )
                 
                 // Valeur au-dessus +1
-                val valueAbove1 = if (value < range.last) value + 1 else range.first
                 Text(
                     text = formatNumber(valueAbove1),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
-                        .offset { IntOffset(0, -itemHeight.roundToInt()) }
+                        .offset { IntOffset(0, (-itemHeight + currentOffset).roundToInt()) }
                         .alpha(0.6f)
                 )
                 
                 // Valeur au-dessus +2
-                val valueAbove2 = if (valueAbove1 < range.last) valueAbove1 + 1 else range.first
                 Text(
                     text = formatNumber(valueAbove2),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier
-                        .offset { IntOffset(0, (-itemHeight * 2).roundToInt()) }
+                        .offset { IntOffset(0, ((-itemHeight * 2) + currentOffset).roundToInt()) }
                         .alpha(0.3f)
                 )
                 
                 // Valeur en-dessous -1
-                val valueBelow1 = if (value > range.first) value - 1 else range.last
                 Text(
                     text = formatNumber(valueBelow1),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
-                        .offset { IntOffset(0, itemHeight.roundToInt()) }
+                        .offset { IntOffset(0, (itemHeight + currentOffset).roundToInt()) }
                         .alpha(0.6f)
                 )
                 
                 // Valeur en-dessous -2
-                val valueBelow2 = if (valueBelow1 > range.first) valueBelow1 - 1 else range.last
                 Text(
                     text = formatNumber(valueBelow2),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier
-                        .offset { IntOffset(0, (itemHeight * 2).roundToInt()) }
+                        .offset { IntOffset(0, ((itemHeight * 2) + currentOffset).roundToInt()) }
                         .alpha(0.3f)
                 )
             }
+            
+            // Ajout de dégradés pour donner un effet "évanescence" en haut et en bas
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(30.dp)
+                    .align(Alignment.TopCenter)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.surfaceVariant,
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0f)
+                            )
+                        )
+                    )
+                    .zIndex(2f)
+            )
+            
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(30.dp)
+                    .align(Alignment.BottomCenter)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0f),
+                                MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        )
+                    )
+                    .zIndex(2f)
+            )
         }
     }
 }

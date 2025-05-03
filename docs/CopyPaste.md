@@ -4,7 +4,9 @@ PS J:\DEV\Android\AATT> ./gradlew installDebug
 w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
 
 > Task :app:compileDebugKotlin FAILED
-e: file:///J:/DEV/Android/AATT/app/src/main/java/fr/bdst/aatt/ui/screens/ActivityEditDialog.kt:112:39 Unresolved reference 'Orientation'.
+e: file:///J:/DEV/Android/AATT/app/src/main/java/fr/bdst/aatt/ui/screens/ActivityEditDialog.kt:167:29 No parameter with name 'state' found.
+e: file:///J:/DEV/Android/AATT/app/src/main/java/fr/bdst/aatt/ui/screens/ActivityEditDialog.kt:168:29 No parameter with name 'decayAnimationSpec' found.
+e: file:///J:/DEV/Android/AATT/app/src/main/java/fr/bdst/aatt/ui/screens/ActivityEditDialog.kt:168:50 Unresolved reference 'rememberSplineBasedDecay'.
 
 FAILURE: Build failed with an exception.
 
@@ -26,5 +28,5 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
 BUILD FAILED in 2s
-30 actionable tasks: 3 executed, 27 up-to-date
+30 actionable tasks: 2 executed, 28 up-to-date
 PS J:\DEV\Android\AATT> 
