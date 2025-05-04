@@ -19,6 +19,9 @@ import java.io.OutputStreamWriter
 import java.text.SimpleDateFormat
 import java.util.*
 
+// Ajout de l'import pour la classe commune
+import fr.bdst.aatt.data.util.DatabaseBackup
+
 /**
  * Classe utilitaire pour gérer les sauvegardes via le Storage Access Framework (SAF)
  * Cette approche permet de maintenir l'accès aux sauvegardes même après réinstallation
@@ -249,13 +252,4 @@ class SAFBackupHelper(
             return sdf.format(Date(lastModified))
         }
     }
-    
-    /**
-     * Classe représentant une sauvegarde complète (identique à l'ancienne implémentation)
-     */
-    data class DatabaseBackup(
-        val timestamp: Long,
-        val version: Int,
-        val activities: List<Activity>
-    )
 }

@@ -9,7 +9,7 @@ import androidx.room.TypeConverters
 import fr.bdst.aatt.data.dao.ActivityDao
 import fr.bdst.aatt.data.model.Activity
 import fr.bdst.aatt.data.util.Converters
-import fr.bdst.aatt.data.util.ExternalStorageHelper
+import fr.bdst.aatt.data.util.DatabaseConstants
 
 /**
  * Classe principale de la base de données Room pour l'application AATT
@@ -29,7 +29,7 @@ abstract class AATTDatabase : RoomDatabase() {
 
     companion object {
         private const val TAG = "AATTDatabase"
-        private const val DB_NAME = ExternalStorageHelper.DB_NAME
+        private const val DB_NAME = DatabaseConstants.DB_NAME
         
         @Volatile
         private var INSTANCE: AATTDatabase? = null
