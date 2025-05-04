@@ -23,7 +23,6 @@ import androidx.navigation.compose.rememberNavController
 import fr.bdst.aatt.data.db.AATTDatabase
 import fr.bdst.aatt.data.repository.ActivityRepository
 import fr.bdst.aatt.data.util.AppEvents
-import fr.bdst.aatt.data.util.FileLogger
 import fr.bdst.aatt.ui.navigation.NavRoutes
 import fr.bdst.aatt.ui.screens.EditScreen
 import fr.bdst.aatt.ui.screens.MainScreen
@@ -64,8 +63,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        // Initialiser le système de logs
-        initializeLogging()
+        // Le système de logs de débogage n'est plus nécessaire
+        // initializeLogging()
         
         // Maintenir l'écran de démarrage visible jusqu'à ce que l'app soit prête
         splashScreen.setKeepOnScreenCondition { !isAppReady }
@@ -75,26 +74,6 @@ class MainActivity : ComponentActivity() {
         
         // Configurer l'écouteur d'événements de restauration de base de données
         setupDatabaseRestoreListener()
-    }
-    
-    /**
-     * Initialise le système de logs pour le débogage en production
-     */
-    private fun initializeLogging() {
-        try {
-            FileLogger.init(this)
-            FileLogger.i("MainActivity", "Application démarrée - ${if (isDebuggable()) "DEBUG" else "RELEASE"}")
-        } catch (e: Exception) {
-            // Si le logging échoue, on utilise au moins LogCat
-            android.util.Log.e("MainActivity", "Impossible d'initialiser le système de logs", e)
-        }
-    }
-    
-    /**
-     * Vérifie si l'application est en mode debug
-     */
-    private fun isDebuggable(): Boolean {
-        return applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0
     }
     
     /**
