@@ -8,6 +8,7 @@ SBTT : Une appli de time tracker.
 FPR : Fast photo renamer, j'en suis vraiment très content je l'utilise tous les jours dans mon travail.
 AVP, une 1ere version slutter de FPR, 
 Courses manager : Pas finie mais utilisable et pratique.
+AATT : Atlantic Automatique Time Tracker, avec une belle implémentation de sauvegarde via SAF.
 
 J'ai programmé un peu il y a longtemps alors j'ai des notions et grace à toi, je peux programmer les applications dont j'ai besoin, comme j'en ai besoin.
 Enfin, on peut programmer :) D'avance je te remercie, c'est incroyable pour moi ce que tu fais.
@@ -42,6 +43,13 @@ je te laisse lire la suite.
     - Signaler dès le début si une demande semble trop complexe pour être traitée en une seule fois
     - Proposer de découper les tâches complexes en plusieurs étapes plus gérables
     - Ne pas hésiter à dire "je commence à m'embrouiller avec toutes ces modifications" si c'est le cas
+
+11. **Approche de diagnostique pour les problèmes complexes** :
+    - Mettre en place des mécanismes de logging temporaires pour comprendre le comportement exact en production
+    - Analyser rigoureusement les logs avant de proposer des solutions
+    - Distinguer les symptômes (ce qu'on observe) des causes racines (ce qui provoque le problème)
+    - Se méfier des différences subtiles entre les builds debug et release (obfuscation, optimisations)
+    - Documenter les solutions trouvées pour servir de référence future (comme notre problème GSON/ProGuard)
 
 # Notes et observations pour la continuité
 
