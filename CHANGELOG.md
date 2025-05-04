@@ -1,5 +1,32 @@
 # Historique des versions - AATT (Atlantic Automatique Time Tracker)
 
+## Version 1.1.4 - 5 mai 2025 - VersionCode 6 (en développement)
+
+### Migration vers le Storage Access Framework (SAF) 🔄
+
+- Implémentation complète du Storage Access Framework pour les sauvegardes/restaurations :
+  - Résolution du problème de perte d'accès aux sauvegardes après désinstallation/réinstallation
+  - Sélection du dossier de sauvegarde via l'interface standard d'Android
+  - Permissions persistantes grâce aux URI persistants du SAF
+  - Support des stockages externes et cloud (Google Drive, etc.)
+
+- Corrections techniques importantes :
+  - Résolution du problème de désérialisation JSON en version release (R8/ProGuard)
+  - Ajout de règles spécifiques pour préserver les informations de type générique
+  - Optimisation de l'approche de désérialisation pour être plus robuste
+  - Nettoyage du code avec suppression des anciennes classes de sauvegarde
+
+- Restructuration majeure du code de sauvegarde :
+  - Extraction des modèles communs dans une classe dédiée `DatabaseBackup`
+  - Création d'une classe `DatabaseConstants` pour les constantes essentielles
+  - Documentation complète de l'implémentation SAF
+  - Ajout d'un système de journalisation dans un fichier pour le débogage en production
+
+### Impacts
+  - Meilleure expérience utilisateur pour la gestion des sauvegardes
+  - Compatibilité améliorée avec les nouvelles restrictions de confidentialité d'Android
+  - Code plus propre, mieux structuré et plus facile à maintenir
+
 ## Version 1.1.3 - 4 mai 2025 - VersionCode 5
 
 ### Corrections et améliorations visuelles 🎨

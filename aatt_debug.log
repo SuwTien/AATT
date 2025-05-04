@@ -1,0 +1,70 @@
+
+=========================================
+AATT Log Session - 2025-05-04 23:49:52.534
+Version: 1.1.3
+Build type: RELEASE
+=========================================
+
+2025-05-04 23:49:52.567 [INFO] MainActivity: Application démarrée - RELEASE
+2025-05-04 23:50:05.468 [DEBUG] SAFBackupHelper: Récupération de l'URI du dossier de sauvegarde: null
+2025-05-04 23:50:11.913 [INFO] SAFBackupHelper: Définition du dossier de sauvegarde: content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FAATT
+2025-05-04 23:50:11.919 [INFO] SAFBackupHelper: Dossier de sauvegarde défini et permissions prises avec succès
+2025-05-04 23:50:11.929 [DEBUG] SAFBackupHelper: Récupération de l'URI du dossier de sauvegarde: content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FAATT
+2025-05-04 23:50:17.604 [DEBUG] SAFBackupHelper: Récupération de l'URI du dossier de sauvegarde: content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FAATT
+2025-05-04 23:50:17.611 [DEBUG] SAFBackupHelper: Vérification du dossier de sauvegarde - URI: content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FAATT, Permissions valides: true
+2025-05-04 23:50:17.623 [INFO] SAFBackupHelper: Début de l'exportation en JSON. Nom de la sauvegarde: n
+2025-05-04 23:50:17.627 [DEBUG] SAFBackupHelper: Récupération de l'URI du dossier de sauvegarde: content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FAATT
+2025-05-04 23:50:17.631 [DEBUG] SAFBackupHelper: Création du fichier de sauvegarde: n.json dans content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FAATT
+2025-05-04 23:50:17.687 [INFO] SAFBackupHelper: Exportation de 1 activités en JSON
+2025-05-04 23:50:17.738 [INFO] SAFBackupHelper: Exportation JSON réussie vers content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FAATT/document/primary%3ADocuments%2FAATT%2Fn.json
+2025-05-04 23:50:17.742 [DEBUG] SAFBackupHelper: Récupération de l'URI du dossier de sauvegarde: content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FAATT
+2025-05-04 23:50:21.046 [DEBUG] SAFBackupHelper: Récupération de l'URI du dossier de sauvegarde: content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FAATT
+2025-05-04 23:50:24.291 [INFO] SAFBackupHelper: Début de l'importation depuis JSON. URI du fichier: content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FAATT/document/primary%3ADocuments%2FAATT%2Faz.json
+2025-05-04 23:50:24.328 [DEBUG] SAFBackupHelper: Lecture du fichier JSON depuis l'URI
+2025-05-04 23:50:24.345 [DEBUG] SAFBackupHelper: Fichier JSON lu avec succès, taille: 211 caractères
+2025-05-04 23:50:24.350 [DEBUG] SAFBackupHelper: Début du contenu JSON: {
+  "activities": [
+    {
+      "endTime": 1746394405179,
+      "id": 1,
+      "isActive": false,
+  ...
+2025-05-04 23:50:24.354 [DEBUG] SAFBackupHelper: Désérialisation du JSON en objet DatabaseBackup
+2025-05-04 23:50:24.358 [ERROR] SAFBackupHelper: Erreur lors de la désérialisation JSON
+java.lang.IllegalStateException: TypeToken must be created with a type argument: new TypeToken<...>() {}; When using code shrinkers (ProGuard, R8, ...) make sure that generic signatures are preserved.
+	at com.google.gson.reflect.TypeToken.getTypeTokenTypeArgument(Unknown Source:40)
+	at com.google.gson.reflect.TypeToken.<init>(SourceFile:2)
+	at T1.g.f(Unknown Source:273)
+	at e2.a.t(Unknown Source:7)
+	at v2.C.run(Unknown Source:112)
+	at A2.i.run(Unknown Source:77)
+	at C2.j.run(Unknown Source:2)
+	at C2.a.run(Unknown Source:91)
+
+2025-05-04 23:50:24.363 [DEBUG] SAFBackupHelper: Tentative de diagnostiquer le problème de désérialisation
+2025-05-04 23:50:24.368 [DEBUG] SAFBackupHelper: Champs attendus dans DatabaseBackup: [activities, timestamp, version, $stable]
+2025-05-04 23:50:30.085 [DEBUG] SAFBackupHelper: Récupération de l'URI du dossier de sauvegarde: content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FAATT
+2025-05-04 23:50:32.515 [INFO] SAFBackupHelper: Début de l'importation depuis JSON. URI du fichier: content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FAATT/document/primary%3ADocuments%2FAATT%2Fn.json
+2025-05-04 23:50:32.538 [DEBUG] SAFBackupHelper: Lecture du fichier JSON depuis l'URI
+2025-05-04 23:50:32.554 [DEBUG] SAFBackupHelper: Fichier JSON lu avec succès, taille: 208 caractères
+2025-05-04 23:50:32.559 [DEBUG] SAFBackupHelper: Début du contenu JSON: {
+  "activities": [
+    {
+      "endTime": 1746395402870,
+      "id": 1,
+      "isActive": false,
+  ...
+2025-05-04 23:50:32.562 [DEBUG] SAFBackupHelper: Désérialisation du JSON en objet DatabaseBackup
+2025-05-04 23:50:32.567 [ERROR] SAFBackupHelper: Erreur lors de la désérialisation JSON
+java.lang.IllegalStateException: TypeToken must be created with a type argument: new TypeToken<...>() {}; When using code shrinkers (ProGuard, R8, ...) make sure that generic signatures are preserved.
+	at com.google.gson.reflect.TypeToken.getTypeTokenTypeArgument(Unknown Source:40)
+	at com.google.gson.reflect.TypeToken.<init>(SourceFile:2)
+	at T1.g.f(Unknown Source:273)
+	at e2.a.t(Unknown Source:7)
+	at v2.C.run(Unknown Source:112)
+	at A2.i.run(Unknown Source:77)
+	at C2.j.run(Unknown Source:2)
+	at C2.a.run(Unknown Source:91)
+
+2025-05-04 23:50:32.576 [DEBUG] SAFBackupHelper: Tentative de diagnostiquer le problème de désérialisation
+2025-05-04 23:50:32.579 [DEBUG] SAFBackupHelper: Champs attendus dans DatabaseBackup: [activities, timestamp, version, $stable]
