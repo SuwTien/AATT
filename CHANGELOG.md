@@ -1,5 +1,14 @@
 # Historique des versions - AATT (Atlantic Automatique Time Tracker)
 
+## Version 1.1.3 - 4 mai 2025 - VersionCode 5
+
+### Corrections et améliorations visuelles 🎨
+
+- Ajout d'un splash screen personnalisé pour améliorer l'expérience de démarrage
+- Mise à jour de l'icône de l'application avec un nouveau design
+- Correction critique de la fonctionnalité de sauvegarde de données
+- Optimisations générales pour une meilleure stabilité
+
 ## Version de développement - 3 mai 2025 (après-midi)
 
 ### Correction de bugs dans l'édition d'activités 🐛

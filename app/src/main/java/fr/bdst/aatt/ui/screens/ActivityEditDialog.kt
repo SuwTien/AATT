@@ -348,7 +348,7 @@ fun ActivityEditDialog(
                 // Titre du dialogue - type d'activité affiché en majuscules
                 Text(
                     text = when (activity.type) {
-                        ActivityType.VS -> "VISITE SEMESTRIELLE"
+                        ActivityType.VS -> "TRAVAIL"
                         ActivityType.ROUTE -> "ROUTE"
                         ActivityType.DOMICILE -> "DOMICILE"
                         ActivityType.PAUSE -> "PAUSE"
