@@ -1,5 +1,26 @@
 # Historique des versions - AATT (Atlantic Automatique Time Tracker)
 
+## Version 1.1.6 - 5 mai 2025 - VersionCode 8
+
+### Amélioration de l'interface utilisateur 🖌️
+
+- Correction du sens de défilement de la roue de sélection des heures :
+  - Le mouvement vers le bas augmente désormais la valeur comme attendu intuitivement
+  - Le mouvement vers le haut diminue la valeur
+  - Améliorations visuelles de la roue pour une meilleure lisibilité
+
+### Impacts
+  - Expérience utilisateur plus intuitive lors de la sélection des heures
+  - Interface plus cohérente avec les standards des applications mobiles
+
+## Version 1.1.5 - 5 mai 2025 - VersionCode 7
+
+### Mise à jour d'interface utilisateur 🛠️
+
+- Correction de bugs mineurs d'interface
+- Optimisations de performance pour la fonction de sauvegarde
+- Améliorations de la stabilité générale
+
 ## Version 1.1.4 - 5 mai 2025 - VersionCode 6 (en développement)
 
 ### Migration vers le Storage Access Framework (SAF) 🔄

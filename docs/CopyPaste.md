@@ -1,23 +1,30 @@
-PS J:\DEV\Android\AATT> git add . 
-warning: in the working copy of 'app/proguard-rules.pro', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'aatt_debug.log', LF will be replaced by CRLF the next time Git touches it
-PS J:\DEV\Android\AATT> git commit -m "RELEASE 1.1.4: Implémentation SAF complète et correction des problèmes de sauvegarde en version release" 
-[main c8602a9] RELEASE 1.1.4: Implémentation SAF complète et correction des problèmes de sauvegarde en version release
- 10 files changed, 613 insertions(+), 271 deletions(-)
- create mode 100644 aatt_debug.log
- create mode 100644 app/src/main/java/fr/bdst/aatt/data/util/FileLogger.kt
- create mode 100644 docs/release_notes_1.1.4.md
-PS J:\DEV\Android\AATT> git config --global core.autocrlf true                            
+PS J:\DEV\Android\AATT> ./gradlew installDebug
+
+> Task :app:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :app:compileDebugKotlin FAILED
+e: file:///J:/DEV/Android/AATT/app/src/main/java/fr/bdst/aatt/ui/screens/ActivityEditDialog.kt:231:18 Unresolved reference 'border'.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 2s
+30 actionable tasks: 2 executed, 28 up-to-date
 PS J:\DEV\Android\AATT> 
-PS J:\DEV\Android\AATT> 
-PS J:\DEV\Android\AATT> git push
-Enumerating objects: 40, done.
-Counting objects: 100% (40/40), done.
-Delta compression using up to 8 threads
-Compressing objects: 100% (19/19), done.
-Writing objects: 100% (22/22), 12.40 KiB | 4.13 MiB/s, done.
-Total 22 (delta 8), reused 0 (delta 0), pack-reused 0 (from 0)
-remote: Resolving deltas: 100% (8/8), completed with 8 local objects.
-To https://github.com/SuwTien/AATT.git
-   951a0cb..c8602a9  main -> main
-PS J:\DEV\Android\AATT>
