@@ -79,15 +79,16 @@ fun NumberPickerWheel(
         // Mettre à jour l'offset de défilement
         scrollOffset.value += delta
         
-        // Vérifier s'il faut changer la valeur sélectionnée
+        // Inverser le comportement du défilement pour le rendre plus naturel
+        // Maintenant, défilement vers le bas -> valeur suivante, défilement vers le haut -> valeur précédente
         if (scrollOffset.value > dragThreshold) {
-            // Défilement vers le bas (valeur précédente)
-            val newValue = if (value > minValue) value - 1 else maxValue
+            // Défilement vers le bas (valeur suivante maintenant au lieu de précédente)
+            val newValue = if (value < maxValue) value + 1 else minValue
             onValueChange(newValue)
             scrollOffset.value -= itemHeight
         } else if (scrollOffset.value < -dragThreshold) {
-            // Défilement vers le haut (valeur suivante)
-            val newValue = if (value < maxValue) value + 1 else minValue
+            // Défilement vers le haut (valeur précédente maintenant au lieu de suivante)
+            val newValue = if (value > minValue) value - 1 else maxValue
             onValueChange(newValue)
             scrollOffset.value += itemHeight
         }
@@ -129,8 +130,8 @@ fun NumberPickerWheel(
     // Zone de défilement avec effet visuel
     Box(
         modifier = modifier
-            .height(140.dp) // Plus haut pour les chiffres plus grands
-            .width(70.dp)   // Plus large pour les chiffres plus grands
+            .height(160.dp) // Augmenté de 140dp à 160dp pour avoir plus d'espace vertical
+            .width(80.dp)   // Augmenté de 70dp à 80dp pour avoir plus d'espace horizontal
             .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
         contentAlignment = Alignment.Center
@@ -138,7 +139,7 @@ fun NumberPickerWheel(
         // Indicateur de sélection (la zone sélectionnée)
         Box(
             modifier = Modifier
-                .height(60.dp) // Plus haut pour les chiffres plus grands
+                .height(70.dp) // Augmenté de 60dp à 70dp pour accommoder les chiffres plus grands
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
                 .zIndex(1f)
@@ -157,16 +158,16 @@ fun NumberPickerWheel(
             // Valeur principale (sélectionnée)
             Text(
                 text = formatNumber(value),
-                style = MaterialTheme.typography.headlineLarge, // Plus grand (headlineLarge)
+                style = MaterialTheme.typography.displayMedium, // Changé de headlineLarge à displayMedium
                 fontWeight = FontWeight.Bold,
-                fontSize = 34.sp, // Taille de police plus grande
+                fontSize = 42.sp, // Augmenté de 34sp à 42sp
                 modifier = Modifier.offset { IntOffset(0, currentOffset.roundToInt()) }
             )
             
             // Valeur au-dessus +1
             Text(
                 text = formatNumber(valueAbove1),
-                style = MaterialTheme.typography.headlineSmall, // Plus grand (headlineSmall)
+                style = MaterialTheme.typography.headlineLarge, // Augmenté de headlineSmall à headlineLarge
                 modifier = Modifier
                     .offset { IntOffset(0, (-itemHeight + currentOffset).roundToInt()) }
                     .alpha(0.6f)
@@ -175,7 +176,7 @@ fun NumberPickerWheel(
             // Valeur au-dessus +2
             Text(
                 text = formatNumber(valueAbove2),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.headlineSmall, // Augmenté de titleMedium à headlineSmall
                 modifier = Modifier
                     .offset { IntOffset(0, ((-itemHeight * 2) + currentOffset).roundToInt()) }
                     .alpha(0.3f)
@@ -184,7 +185,7 @@ fun NumberPickerWheel(
             // Valeur en-dessous -1
             Text(
                 text = formatNumber(valueBelow1),
-                style = MaterialTheme.typography.headlineSmall, // Plus grand (headlineSmall)
+                style = MaterialTheme.typography.headlineLarge, // Augmenté de headlineSmall à headlineLarge
                 modifier = Modifier
                     .offset { IntOffset(0, (itemHeight + currentOffset).roundToInt()) }
                     .alpha(0.6f)
@@ -193,7 +194,7 @@ fun NumberPickerWheel(
             // Valeur en-dessous -2
             Text(
                 text = formatNumber(valueBelow2),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.headlineSmall, // Augmenté de titleMedium à headlineSmall
                 modifier = Modifier
                     .offset { IntOffset(0, ((itemHeight * 2) + currentOffset).roundToInt()) }
                     .alpha(0.3f)
